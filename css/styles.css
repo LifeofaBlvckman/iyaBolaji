@@ -453,11 +453,19 @@ main { overflow-x: clip; }
 .directions { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
 .directions svg { width: 18px; height: 18px; color: var(--red); }
 
-.footer-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding: 22px 0; border-top: 1px solid rgba(253, 240, 220, .14); font-size: 14px; color: var(--muted-on-ink); }
+.footer-base { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding: clamp(28px, 4vw, 44px) 0 clamp(28px, 3vw, 36px); font-size: 14px; color: var(--muted-on-ink); }
+.footer-pills { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pill {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px;
+  border: 2px solid rgba(253, 240, 220, .55); border-radius: 999px;
+  color: var(--cream); font-weight: 700; font-size: 14px; text-decoration: none;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+.pill:hover { background: var(--cream); border-color: var(--cream); color: var(--ink); }
 
-.footer-mark { padding-top: 24px; text-align: center; }
+.footer-mark { padding-top: clamp(24px, 5vw, 80px); text-align: center; }
 .footer-word { display: block; font-family: var(--f-logo); font-size: clamp(84px, 23.5vw, 360px); line-height: .74; color: var(--cream); }
-.footer-mark .food-mark { display: block; width: 44%; height: auto; aspect-ratio: 404 / 88; margin: 0 auto -6.5%; color: var(--red); }
+.footer-mark .food-mark { display: block; width: clamp(140px, 36%, 470px); height: auto; aspect-ratio: 404 / 88; margin: clamp(14px, 2.6vw, 36px) auto 0; color: var(--red); }
 
 /* Bag panel + toast ---------------------------------------------------- */
 

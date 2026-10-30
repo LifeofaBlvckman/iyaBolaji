@@ -404,6 +404,13 @@
   });
   email.addEventListener("input", () => { email.removeAttribute("aria-invalid"); msg.textContent = ""; });
 
+  /* Footer links ------------------------------------------------------ */
+
+  for (const [label, url] of Object.entries(D.links || {})) {
+    if (!url) continue;
+    $("#footer-pills").insertAdjacentHTML("beforeend", `<li><a class="pill" href="${url}" target="_blank" rel="noopener">${label}</a></li>`);
+  }
+
   $("#year").textContent = new Date().getFullYear();
   renderBag();
 })();

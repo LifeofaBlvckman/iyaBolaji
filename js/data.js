@@ -17,6 +17,9 @@ window.IYA = {
   // Optional form endpoint (Formspree, Mailchimp, etc.) for the email sign-up.
   signupEndpoint: "",
 
+  // Extra buttons in the footer, next to Google Maps. Leave a link empty to hide it.
+  links: { Chowdeck: "", Instagram: "", TikTok: "", Facebook: "" },
+
   // The weekly drop countdown: Friday (5) at 18:00 Lagos time.
   drop: { weekday: 5, hour: 18 },
 
