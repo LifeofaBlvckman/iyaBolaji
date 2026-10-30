@@ -118,6 +118,14 @@
     $$(".ticker, .hero-visual, .page-hero-visual, .mood-badge").forEach((el) => pauser.observe(el));
   }
 
+  /* Header turns to glass once the announcement bar scrolls away ------- */
+
+  const header = $("#site-header");
+  const announce = $(".announce");
+  if (header && announce && "IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => header.classList.toggle("is-glass", !entry.isIntersecting)).observe(announce);
+  }
+
   /* Toast -------------------------------------------------------------- */
 
   const toastEl = $("#toast");

@@ -1,6 +1,9 @@
 /* IyaBolaji Restaurant ------------------------------------------------- */
 
 :root {
+  --nav-h: 96px;      /* header height at the top of the page */
+  --nav-glass-h: 66px; /* height once it turns to glass */
+  --nav-glass-top: 10px;
   --red: #d9151d;
   --red-deep: #b30f16;
   --ink: #141211;
@@ -22,7 +25,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-top: 16px; }
+html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-top: calc(var(--nav-glass-h) + var(--nav-glass-top) + 16px); }
 
 body {
   margin: 0;
@@ -142,9 +145,32 @@ p { margin: 0; text-wrap: pretty; }
   padding-bottom: clamp(110px, 10vw, 150px);
 }
 
-.nav { position: relative; z-index: 20; display: flex; align-items: center; gap: 28px; height: 96px; }
+/* The header stays pinned while you scroll. Its wrapper keeps a fixed height
+   so the page never jumps; the bar inside shrinks into a frosted glass pill. */
+.site-header { position: sticky; top: 0; z-index: 50; display: flow-root; height: var(--nav-h); color: var(--cream); pointer-events: none; }
+.site-header + :is(.hero, .page-hero) { margin-top: calc(-1 * var(--nav-h)); padding-top: var(--nav-h); }
+.nav {
+  position: relative; z-index: 20; display: flex; align-items: center; gap: 28px; height: var(--nav-h);
+  border: 1px solid transparent; border-radius: 0; pointer-events: auto;
+  transition: height .35s ease, margin-top .35s ease, padding .35s ease, border-radius .35s ease, background-color .35s ease, border-color .35s ease, box-shadow .35s ease;
+}
+.logo { transition: transform .35s ease; transform-origin: left center; }
+/* Deep red glass: dark enough that cream text stays readable over any section. */
+.site-header.is-glass .nav {
+  height: var(--nav-glass-h); margin-top: var(--nav-glass-top); padding: 0 10px 0 22px;
+  border-color: rgba(255, 255, 255, .22); border-radius: 999px;
+  background: rgba(179, 15, 22, .8);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 14px 34px rgba(50, 0, 0, .25);
+}
+.site-header.is-glass .logo { transform: scale(.82); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header.is-glass .nav { background: rgba(179, 15, 22, .96); }
+}
 
 .logo { display: inline-flex; flex-direction: column; align-items: center; color: var(--cream); text-decoration: none; }
+.is-glass .logo .food-mark { color: var(--cream); }
 .logo-word { font-family: var(--f-logo); font-size: 46px; line-height: .78; padding-top: 4px; }
 .logo .food-mark { width: 48px; height: 11px; color: var(--ink); margin-top: 3px; }
 
@@ -546,12 +572,12 @@ main { overflow-x: clip; }
 .page-hero-visual .price-sticker { top: auto; bottom: 6%; right: 2%; }
 
 /* Menu page */
-.menu-tabs { position: sticky; top: 0; z-index: 30; background: rgba(253, 240, 220, .94); border-bottom: 2px solid var(--ink); }
+.menu-tabs { position: sticky; top: calc(var(--nav-glass-h) + var(--nav-glass-top) + 8px); z-index: 30; background: rgba(253, 240, 220, .94); border-bottom: 2px solid var(--ink); }
 .menu-tabs .container { display: flex; gap: 10px; overflow-x: auto; padding-block: 12px; scrollbar-width: none; }
 .menu-tabs .container::-webkit-scrollbar { display: none; }
 .menu-tabs .chip { flex: none; text-decoration: none; }
 .menu-tabs .chip[aria-current="true"] { background: var(--ink); color: var(--cream); }
-.menu-cat { scroll-margin-top: 76px; padding: clamp(60px, 7vw, 100px) 0 clamp(70px, 8vw, 110px); }
+.menu-cat { scroll-margin-top: calc(var(--nav-glass-h) + var(--nav-glass-top) + 86px); padding: clamp(60px, 7vw, 100px) 0 clamp(70px, 8vw, 110px); }
 .menu-cat-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 32px; }
 .menu-cat-head .display { font-size: clamp(38px, 5.6vw, 84px); }
 .menu-cat-head p { max-width: 380px; }
@@ -682,7 +708,7 @@ main { overflow-x: clip; }
 @media (max-width: 960px) {
   .menu-toggle { display: inline-grid; }
   .nav-links {
-    position: absolute; top: 88px; left: 0; right: 0;
+    position: absolute; top: calc(100% + 10px); left: 0; right: 0;
     display: none; flex-direction: column; gap: 0; margin: 0; padding: 12px 24px;
     background: var(--ink); border-radius: 24px; box-shadow: 0 24px 50px rgba(0, 0, 0, .35);
   }
@@ -715,8 +741,9 @@ main { overflow-x: clip; }
 
 @media (max-width: 600px) {
   body { font-size: 16px; }
-  .nav { height: 80px; gap: 12px; }
-  .nav-links { top: 74px; }
+  :root { --nav-h: 80px; --nav-glass-h: 60px; --nav-glass-top: 8px; }
+  .nav { gap: 12px; }
+  .site-header.is-glass .nav { padding: 0 6px 0 16px; }
   .logo-word { font-size: 38px; }
   .logo .food-mark { width: 40px; height: 9px; }
   .nav-order, .sound-btn { display: none; }
