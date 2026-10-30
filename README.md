@@ -65,6 +65,16 @@ node tools/export_logos.js
 
 The logo export needs Playwright and an internet connection (it loads the Modak font from Google Fonts).
 
+## Link previews
+
+Each page has its own preview image (`assets/og/*.jpg`, 1200x630) plus title and description tags, so shared links show a card on WhatsApp, iMessage, Facebook and X. Rebuild the images after changing prices or photos:
+
+```bash
+node tools/export_og.js
+```
+
+The tags use the full address `https://iyabolaji.vercel.app`. If the site moves to its own domain, replace that address in the `<head>` of all four pages.
+
 ## Publishing
 
 Any static host works. On GitHub: Settings → Pages → deploy from this branch, folder `/ (root)`.
