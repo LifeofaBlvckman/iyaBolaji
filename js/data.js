@@ -160,7 +160,7 @@ window.IYA = {
     // Protein
     {
       id: "turkey", name: "Turkey", cat: "protein", badge: "", price: 7000,
-      img: "assets/art/turkey.svg", alt: "Fried turkey wings",
+      img: "assets/img/turkey.jpg", photo: true, alt: "Three fried turkey wings",
       desc: "Fried turkey.",
       heat: 2, full: 3, napkins: 5, serves: "Protein",
     },

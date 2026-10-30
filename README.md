@@ -28,7 +28,7 @@ Then visit http://localhost:8000.
 
 **Prices and dishes**: change the `dishes` list in `js/data.js` (it mirrors the Chowdeck menu). Each dish has a name, category, badge, price (naira), description and 0–5 ratings for heat, "belle full" and napkins. A dish with `price: null` stays in the file but is hidden on the site until it has a price.
 
-**Real food photos**: put the photo in `assets/img/` (create the folder), then in `js/data.js` set the dish's `img` to that path and add `photo: true`. Photos get a framed, rounded crop. Illustrations stay cut-outs. The big hero plate, the "why" photo and the drop photo are set directly in `index.html`.
+**Real food photos**: put the photo in `assets/img/` (create the folder), then in `js/data.js` set the dish's `img` to that path and add `photo: true`. Photos get a round enamel-plate frame to match the illustrations. The big hero plate, the "why" photo and the drop photo are set directly in `index.html`.
 
 **WhatsApp ordering**: set `whatsapp` in `js/data.js` to the number in international format without `+` (e.g. `2348012345678`). The bag's checkout button then sends the whole order on WhatsApp. If you only set `phone`, it becomes a "Call to order" button.
 

@@ -36,6 +36,14 @@ body {
 }
 
 img { max-width: 100%; height: auto; display: block; }
+
+/* Real photos sit in an enamel-plate frame so they match the illustrated plates. */
+img.is-photo {
+  --ring: 8px;
+  aspect-ratio: 1; object-fit: cover; border-radius: 50%;
+  padding: 3.5%; background: var(--paper);
+  box-shadow: 0 0 0 var(--ring) var(--red), 0 0 0 calc(var(--ring) + 5px) var(--paper), 0 26px 50px rgba(60, 10, 0, .35);
+}
 a { color: inherit; }
 button { font: inherit; color: inherit; cursor: pointer; }
 svg { flex: none; }
@@ -194,6 +202,7 @@ p { margin: 0; text-wrap: pretty; }
 
 .hero-visual { position: absolute; z-index: 2; right: -2%; bottom: calc(-1 * clamp(110px, 12vw, 170px)); width: min(45%, 600px); }
 .hero-dish { position: relative; z-index: 2; width: 100%; animation: float 6s ease-in-out infinite; }
+.hero-dish.is-photo { --ring: 12px; width: 88%; margin: 6%; }
 .hero-drink { position: absolute; z-index: 1; width: 33%; right: -5%; top: -27%; transform: rotate(9deg); }
 
 .price-sticker {
@@ -263,6 +272,7 @@ main { overflow-x: clip; }
   mask: radial-gradient(closest-side, #000 22%, transparent 100%);
 }
 .feature-visual img { position: relative; width: 86%; transition: transform .45s var(--ease-pop), opacity .2s ease; }
+.feature-visual img.is-photo { width: 76%; }
 .feature-visual img.is-swapping { opacity: 0; transform: rotate(-30deg) scale(.82); }
 
 .price-dot {
@@ -332,7 +342,7 @@ main { overflow-x: clip; }
   transition: transform .35s var(--ease-pop);
 }
 .card:hover img { transform: translateX(-50%) rotate(calc(var(--tilt, 0deg) - 10deg)) scale(1.05); }
-.card img.is-photo { top: -70px; width: 236px; height: 236px; object-fit: cover; border-radius: 26px; border: 6px solid var(--paper); box-shadow: 0 16px 30px rgba(0, 0, 0, .25); }
+.card img.is-photo { --ring: 6px; top: -80px; width: 246px; height: 246px; object-fit: cover; }
 
 .card-badge {
   position: absolute; z-index: 2; top: 22px; left: 22px;
@@ -462,7 +472,7 @@ main { overflow-x: clip; }
 .bag-list { flex: 1; overflow-y: auto; margin: 0; padding: 12px 24px; list-style: none; }
 .bag-list li { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(20, 18, 17, .12); }
 .bag-list img { width: 64px; height: 64px; object-fit: contain; }
-.bag-list img.is-photo { object-fit: cover; border-radius: 14px; }
+.bag-list img.is-photo { padding: 2px; object-fit: cover; box-shadow: 0 0 0 3px var(--red); }
 .bag-item-name { font-weight: 700; line-height: 1.25; }
 .bag-item-price { font-size: 14px; color: #5a4e44; }
 .stepper { display: flex; align-items: center; gap: 6px; }
