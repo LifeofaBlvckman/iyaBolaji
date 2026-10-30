@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add("js"); setTimeout(function () { document.documentElement.classList.add("is-loaded"); }, 2000);</script>
   <title>IyaBolaji Restaurant · Ipaja, Lagos</title>
   <meta name="description" content="Jollof, fried turkey, bokoto, amala and more from Mama's pot. Dine-in, takeaway and delivery on 3rd Ave Rd, Ipaja, Lagos. Open till 11:59PM.">
   <meta name="theme-color" content="#d9151d">
@@ -32,7 +33,7 @@
   }
   </script>
 </head>
-<body>
+<body data-page="home">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="food-mark" viewBox="0 0 404 88">
       <g fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
@@ -54,6 +55,7 @@
     <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
     <symbol id="i-chili" viewBox="0 0 24 24"><path fill="currentColor" d="M3.6 18.4c7.3 2.4 14.4-2.3 15.6-10.4.1-.9-1-1.3-1.5-.6-2.7 3.7-7.5 6.4-12.6 7.6-1.9.4-3.2 2.8-1.5 3.4Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18.6 7.4c.2-1.7 1.2-2.9 2.8-3.5"/></symbol>
     <symbol id="i-napkin" viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h18v11.5L14.5 21H3V3Z"/><path fill="currentColor" opacity=".45" d="M14.5 21v-6.5H21Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></g></symbol>
     <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11.5a7 7 0 1 0-14 0C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.6"/></g></symbol>
   </svg>
 
@@ -63,22 +65,21 @@
     <p>
       <svg class="announce-spark" aria-hidden="true"><use href="#i-spark"/></svg>
       Asun Goat Meat is back Friday at 6PM.
-      <a href="#drop">Scratch for today's deal</a>
+      <a href="./#drop">Scratch for today's deal</a>
     </p>
   </div>
 
   <header class="hero" id="top">
-    <nav class="nav container" aria-label="Main">
-      <a class="logo" href="#top" aria-label="IyaBolaji Food, back to top">
+    <nav class="nav container" aria-label="Main" data-intro style="--intro: fade-down">
+      <a class="logo" href="./" aria-label="IyaBolaji Food, home">
         <span class="logo-word" aria-hidden="true">iyabolaji</span>
         <svg class="food-mark" aria-hidden="true"><use href="#food-mark"/></svg>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="#menu">Menu</a></li>
-        <li><a href="#cravings">Build a plate</a></li>
-        <li><a href="#drop">Drops</a></li>
-        <li><a href="#signup">Rewards</a></li>
-        <li><a href="#find">Find us</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="about.html">Our story</a></li>
+        <li><a href="visit.html">Find us</a></li>
+        <li><a href="./#drop">Drops</a></li>
       </ul>
       <div class="nav-actions">
         <button class="icon-btn sound-btn" id="sound" type="button" aria-pressed="false" aria-label="Play kitchen sizzle sound">
@@ -88,7 +89,7 @@
           <svg aria-hidden="true"><use href="#i-bag"/></svg>
           <span class="bag-count" id="bag-count" aria-hidden="true">0</span>
         </button>
-        <a class="btn btn-cream nav-order" href="#menu">Order now</a>
+        <a class="btn btn-cream nav-order" href="menu.html">Order now</a>
         <button class="icon-btn menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open navigation">
           <svg aria-hidden="true"><use href="#i-menu"/></svg>
         </button>
@@ -97,28 +98,28 @@
 
     <div class="hero-stage container">
       <div class="lockup">
-        <h1 class="wordmark"><span class="sr-only">IyaBolaji Food</span><span aria-hidden="true">iyabolaji</span></h1>
+        <h1 class="wordmark"><span class="sr-only">IyaBolaji Food</span><span aria-hidden="true"><span class="ch" style="--i: 0">i</span><span class="ch" style="--i: 1">y</span><span class="ch" style="--i: 2">a</span><span class="ch" style="--i: 3">b</span><span class="ch" style="--i: 4">o</span><span class="ch" style="--i: 5">l</span><span class="ch" style="--i: 6">a</span><span class="ch" style="--i: 7">j</span><span class="ch" style="--i: 8">i</span></span></h1>
         <svg class="food-mark hero-food" aria-hidden="true"><use href="#food-mark"/></svg>
-        <p class="scribble">
+        <p class="scribble" data-intro style="--intro: fade-in; --delay: 1.6s">
           <svg class="scribble-arrow" viewBox="0 0 84 54" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M80 48C56 50 28 40 14 10"/><path d="M5 22l9-13 14 5"/></g></svg>
           Oya,<br>come chop
         </p>
       </div>
 
       <div class="hero-copy">
-        <p class="hero-title"><span>Smoky</span><span>jollof.</span><span class="ink">Mama's touch.</span></p>
+        <p class="hero-title"><span class="ln"><span class="li" style="--i: 0">Smoky</span></span><span class="ln"><span class="li" style="--i: 1">jollof.</span></span><span class="ln ink"><span class="li" style="--i: 2">Mama's touch.</span></span></p>
         <div class="hero-ctas">
-          <a class="btn btn-cream btn-lg" href="#menu">Order now</a>
-          <a class="btn btn-ghost btn-lg" href="#cravings">Build your plate</a>
+          <a class="btn btn-cream btn-lg" href="menu.html" data-intro style="--delay: 1.25s">Order now</a>
+          <a class="btn btn-ghost btn-lg" href="#cravings" data-intro style="--delay: 1.35s">Build your plate</a>
         </div>
-        <p class="open-now"><span class="dot" aria-hidden="true"></span>Open till 11:59PM in Ipaja, Lagos</p>
+        <p class="open-now" data-intro style="--delay: 1.5s"><span class="dot" aria-hidden="true"></span>Open till 11:59PM in Ipaja, Lagos</p>
       </div>
 
       <div class="hero-visual">
-        <img class="hero-drink" src="assets/art/zobo.svg" alt="" width="420" height="620">
+        <img class="hero-drink" src="assets/art/zobo.webp" alt="" width="420" height="620" data-intro style="--intro: drop-in; --delay: 1s">
         <img class="hero-dish is-photo" src="assets/img/turkey.jpg" alt="Three golden fried turkey wings from the IyaBolaji kitchen" width="1000" height="1000" fetchpriority="high">
-        <p class="price-sticker"><span>Fried turkey</span><strong>₦7,000</strong></p>
-        <div class="mood-badge" aria-hidden="true">
+        <p class="price-sticker" data-intro style="--intro: pop; --delay: 1.3s"><span>Fried turkey</span><strong>₦7,000</strong></p>
+        <div class="mood-badge" aria-hidden="true" data-intro style="--intro: pop; --delay: 1.45s">
           <svg class="mood-ring" viewBox="0 0 200 200">
             <defs><path id="ring" d="M100 100m-72 0a72 72 0 1 1 144 0a72 72 0 1 1-144 0"/></defs>
             <text><textPath href="#ring" textLength="448">hot pot ✦ belle full ✦ come chop ✦</textPath></text>
@@ -148,17 +149,17 @@
     <section class="cravings" id="cravings" aria-labelledby="cravings-title">
       <div class="container">
         <div class="section-head">
-          <h2 class="display" id="cravings-title">What's the<br>craving?</h2>
-          <p class="lede">Tell us how you feel. We'll pick your plate, tell you how hot it runs and how full your belle will be.</p>
+          <h2 class="display" id="cravings-title" data-split>What's the<br>craving?</h2>
+          <p class="lede" data-reveal style="--d: .2s">Tell us how you feel. We'll pick your plate, tell you how hot it runs and how full your belle will be.</p>
         </div>
-        <div class="chips" id="craving-chips" role="group" aria-label="Pick a craving"></div>
+        <div class="chips" id="craving-chips" data-reveal role="group" aria-label="Pick a craving"></div>
 
         <div class="feature">
-          <div class="feature-visual">
-            <img id="feature-img" src="assets/art/jollof-enjoyment.svg" alt="" width="600" height="600">
+          <div class="feature-visual" data-reveal="pop">
+            <img id="feature-img" src="assets/art/jollof-enjoyment.webp" alt="" width="600" height="600">
             <p class="price-dot"><small>only</small><strong id="feature-price"></strong></p>
           </div>
-          <article class="feature-card" aria-live="polite">
+          <article class="feature-card" aria-live="polite" data-reveal="right" style="--d: .15s">
             <h3 id="feature-name"></h3>
             <p id="feature-desc"></p>
             <dl class="meters">
@@ -181,11 +182,12 @@
 
     <section class="lineup" id="menu" aria-labelledby="menu-title">
       <div class="container section-head">
-        <h2 class="display" id="menu-title">What's<br>cooking</h2>
-        <div class="chips" id="menu-filters" role="group" aria-label="Filter the menu"></div>
+        <h2 class="display" id="menu-title" data-split>What's<br>cooking</h2>
+        <div class="chips" id="menu-filters" data-reveal role="group" aria-label="Filter the menu"></div>
       </div>
       <ul class="cards" id="cards" aria-live="polite"></ul>
-      <div class="container lineup-nav">
+      <div class="container lineup-nav" data-reveal>
+        <a class="btn btn-red btn-lg lineup-more" href="menu.html">See the full menu</a>
         <button class="round-btn" type="button" data-scroll="-1" aria-label="Scroll menu left"><svg aria-hidden="true"><use href="#i-left"/></svg></button>
         <button class="round-btn" type="button" data-scroll="1" aria-label="Scroll menu right"><svg aria-hidden="true"><use href="#i-right"/></svg></button>
       </div>
@@ -193,35 +195,35 @@
 
     <section class="why" id="why" aria-labelledby="why-title">
       <div class="container">
-        <h2 class="display" id="why-title">Why it tastes<br>like home</h2>
-        <p class="lede">No secret menu, no shortcuts. Just a few rules Iya Bolaji's kitchen follows, every single day.</p>
+        <h2 class="display" id="why-title" data-split>Why it tastes<br>like home</h2>
+        <p class="lede" data-reveal style="--d: .2s">No secret menu, no shortcuts. Just a few rules Iya Bolaji's kitchen follows, every single day.</p>
 
         <div class="why-grid">
           <div class="facts facts-left">
-            <div class="fact">
+            <div class="fact" data-reveal="left">
               <strong>4 hrs</strong>
               <p>Our pepper sauce simmers low and slow until the oil floats to the top.</p>
               <svg class="fact-arrow" viewBox="0 0 84 40" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8C22 28 48 34 76 26"/><path d="M64 16l12 10-13 8"/></g></svg>
             </div>
-            <div class="fact">
+            <div class="fact" data-reveal="left" style="--d: .15s">
               <strong>Overnight</strong>
               <p>Turkey and fish soak up the seasoning overnight before they touch the oil.</p>
               <svg class="fact-arrow" viewBox="0 0 84 40" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 30C24 10 50 6 76 12"/><path d="M63 3l13 9-11 11"/></g></svg>
             </div>
           </div>
 
-          <figure class="why-photo">
+          <figure class="why-photo" data-reveal="pop">
             <img src="assets/img/fish-pepper-stew.jpg" alt="Mackerel cooked down in red pepper stew, straight from the IyaBolaji kitchen" width="782" height="535" loading="lazy">
             <figcaption>No filter, just pepper</figcaption>
           </figure>
 
           <div class="facts facts-right">
-            <div class="fact">
+            <div class="fact" data-reveal="right" style="--d: .1s">
               <strong>Daily</strong>
               <p>Fresh peppers, tomatoes and ugu from the market every morning.</p>
               <svg class="fact-arrow" viewBox="0 0 84 40" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M80 8C62 28 36 34 8 26"/><path d="M20 16 8 26l13 8"/></g></svg>
             </div>
-            <div class="fact">
+            <div class="fact" data-reveal="right" style="--d: .25s">
               <strong>11:59PM</strong>
               <p>The pots stay hot till midnight. Long day or late shift, we've got you.</p>
               <svg class="fact-arrow" viewBox="0 0 84 40" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M80 30C60 10 34 6 8 12"/><path d="M21 3 8 12l11 11"/></g></svg>
@@ -236,21 +238,21 @@
     <section class="drop" id="drop" aria-labelledby="drop-title">
       <div class="container drop-grid">
         <div class="drop-copy">
-          <p class="tag-red"><svg aria-hidden="true"><use href="#i-spark"/></svg> Next mood drop</p>
-          <h2 class="display" id="drop-title">Asun<br>goat meat</h2>
-          <p>Succulent goat meat, peppered asun style with onions and scotch bonnet. Back on Friday at 6PM, while the pot lasts.</p>
-          <div class="countdown" id="countdown" role="timer" aria-label="Time until the drop">
+          <p class="tag-red" data-reveal="pop"><svg aria-hidden="true"><use href="#i-spark"/></svg> Next mood drop</p>
+          <h2 class="display" id="drop-title" data-split>Asun<br>goat meat</h2>
+          <p data-reveal style="--d: .2s">Succulent goat meat, peppered asun style with onions and scotch bonnet. Back on Friday at 6PM, while the pot lasts.</p>
+          <div class="countdown" id="countdown" data-reveal style="--d: .3s" role="timer" aria-label="Time until the drop">
             <div><b data-unit="d">0</b><span>Days</span></div>
             <div><b data-unit="h">00</b><span>Hrs</span></div>
             <div><b data-unit="m">00</b><span>Mins</span></div>
             <div><b data-unit="s">00</b><span>Secs</span></div>
           </div>
-          <a class="btn btn-cream btn-lg" href="#signup">Remind me</a>
+          <a class="btn btn-cream btn-lg" href="#signup" data-reveal style="--d: .4s">Remind me</a>
         </div>
 
         <div class="drop-visual">
-          <img src="assets/art/asun.svg" alt="Peppered asun goat meat with onions and peppers" width="600" height="600" loading="lazy">
-          <div class="scratch" id="scratch">
+          <img src="assets/art/asun.webp" alt="Peppered asun goat meat with onions and peppers" width="600" height="600" loading="lazy" data-reveal="pop">
+          <div class="scratch" id="scratch" data-reveal style="--d: .35s">
             <div class="scratch-card">
               <div class="scratch-prize" id="scratch-prize">
                 <small>Today's deal</small>
@@ -270,9 +272,9 @@
     <div class="footer-band" aria-hidden="true"></div>
     <div class="container footer-top">
       <div class="signup" id="signup">
-        <h2 class="display">Hear about new<br>pots first</h2>
-        <p>One message on Fridays with the new drop, the scratch deal and nothing else.</p>
-        <form id="signup-form" novalidate>
+        <h2 class="display" data-split>Hear about new<br>pots first</h2>
+        <p data-reveal>One message on Fridays with the new drop, the scratch deal and nothing else.</p>
+        <form id="signup-form" novalidate data-reveal style="--d: .15s">
           <label class="sr-only" for="email">Email address</label>
           <div class="signup-row">
             <input id="email" name="email" type="email" placeholder="you@email.com" autocomplete="email" required aria-describedby="form-msg">
@@ -283,16 +285,16 @@
       </div>
 
       <nav class="footer-cols" aria-label="Footer">
-        <div>
+        <div data-reveal>
           <h3>Eat</h3>
           <ul>
-            <li><a href="#menu">Menu</a></li>
-            <li><a href="#cravings">Build a plate</a></li>
-            <li><a href="#drop">Drops</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="./#cravings">Build a plate</a></li>
+            <li><a href="./#drop">Drops</a></li>
             <li><a href="#signup">Rewards</a></li>
           </ul>
         </div>
-        <div>
+        <div data-reveal style="--d: .15s">
           <h3>Find us</h3>
           <ul>
             <li>3rd Ave Rd, near Naijahitplay</li>
@@ -301,19 +303,20 @@
             <li><a class="directions" href="https://www.google.com/maps/search/?api=1&amp;query=IyaBolaji%20Restaurant%2C%203rd%20Ave%20Rd%2C%20Ipaja%2C%20Lagos" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-pin"/></svg>Get directions</a></li>
           </ul>
         </div>
-        <div>
-          <h3>Help</h3>
+        <div data-reveal style="--d: .3s">
+          <h3>More</h3>
           <ul>
-            <li>Dine-in · Takeaway · Delivery</li>
-            <li><a href="#menu">Allergens: ask at the counter</a></li>
+            <li><a href="about.html">Our story</a></li>
+            <li><a href="visit.html">Dine-in, takeaway, delivery</a></li>
+            <li><a href="visit.html#allergens">Allergens: ask at the counter</a></li>
             <li><a href="#bag-open" data-open-bag>Your bag</a></li>
           </ul>
         </div>
       </nav>
     </div>
     <div class="footer-mark" aria-hidden="true">
-      <span class="footer-word">iyabolaji</span>
-      <svg class="food-mark"><use href="#food-mark"/></svg>
+      <span class="footer-word" data-chars>iyabolaji</span>
+      <svg class="food-mark" data-draw><use href="#food-mark"/></svg>
     </div>
     <div class="container footer-base">
       <p>© <span id="year">2026</span> IyaBolaji Restaurant, Ipaja, Lagos. Prices can change, so check at the counter.</p>
@@ -331,7 +334,7 @@
     <ul class="bag-list" id="bag-list"></ul>
     <div class="bag-foot">
       <p class="bag-total"><span>Total</span><strong id="bag-total">₦0</strong></p>
-      <a class="btn btn-red btn-lg bag-checkout" id="bag-checkout" href="#find">Visit or call to order</a>
+      <a class="btn btn-red btn-lg bag-checkout" id="bag-checkout" href="visit.html">Visit or call to order</a>
       <p class="bag-note" id="bag-note">Pick up, dine in, or ask about delivery.</p>
     </div>
   </dialog>

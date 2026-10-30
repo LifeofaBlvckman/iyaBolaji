@@ -8,6 +8,11 @@
   const money = (n) => D.currency + n.toLocaleString("en-NG");
   const icon = (id, cls = "") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const root = document.documentElement;
+
+  // Scroll reveals only hide things once this script is running, so the page
+  // stays readable if it ever fails to load.
+  root.classList.add("motion");
 
   const store = {
     get(key, fallback) {
@@ -17,6 +22,101 @@
       try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode */ }
     },
   };
+
+  /* Motion -------------------------------------------------------------- */
+  // JS only adds classes here; the animations are CSS moves and fades, and each
+  // element animates once.
+
+  function splitWords(el) {
+    let i = 0;
+    const walk = (node) => {
+      for (const child of [...node.childNodes]) {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const frag = document.createDocumentFragment();
+          for (const part of child.textContent.split(/(\s+)/)) {
+            if (!part) continue;
+            if (/^\s+$/.test(part)) { frag.append(part); continue; }
+            const w = document.createElement("span");
+            const wi = document.createElement("span");
+            w.className = "w";
+            wi.className = "wi";
+            wi.style.setProperty("--wi", i++);
+            wi.textContent = part;
+            w.append(wi);
+            frag.append(w);
+          }
+          child.replaceWith(frag);
+        } else if (child.nodeType === Node.ELEMENT_NODE && child.tagName !== "BR") {
+          walk(child);
+        }
+      }
+    };
+    walk(el);
+  }
+
+  function splitChars(el) {
+    // Letters of a word stay in one nowrap group so lines only break between words.
+    let i = 0;
+    el.innerHTML = el.textContent.trim().split(/\s+/).map((word) => `<span style="white-space: nowrap">${
+      [...word].map((c) => `<span class="ch" style="--i: ${i++}">${c}</span>`).join("")
+    }</span>`).join(" ");
+  }
+
+  function countText(el, n) {
+    return (el.dataset.prefix || "") + Math.round(n).toLocaleString("en-NG") + (el.dataset.suffix || "");
+  }
+
+  function countUp(el) {
+    if (el.dataset.counted) return;
+    el.dataset.counted = "1";
+    const target = Number(el.dataset.count);
+    if (reduceMotion) { el.textContent = countText(el, target); return; }
+    const start = performance.now();
+    const step = (now) => {
+      const k = Math.min(1, (now - start) / 1400);
+      el.textContent = countText(el, target * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function show(el) {
+    el.classList.add("is-in");
+    if (el.dataset.count) countUp(el);
+    $$("[data-count]", el).forEach(countUp);
+  }
+
+  let revealReady = false;
+  const io = "IntersectionObserver" in window && !reduceMotion
+    ? new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        show(entry.target);
+        io.unobserve(entry.target);
+      }
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 })
+    : null;
+
+  // Watch anything under `scope` that should animate in when scrolled to.
+  function observe(scope = document) {
+    if (!revealReady) return;
+    for (const el of $$("[data-reveal], [data-split], [data-chars], [data-draw], [data-count]", scope)) {
+      if (el.classList.contains("is-in")) continue;
+      if (io) io.observe(el); else show(el);
+    }
+  }
+
+  $$("[data-split]").forEach(splitWords);
+  $$("[data-chars]").forEach(splitChars);
+  if (!reduceMotion) $$("[data-count]").forEach((el) => { el.textContent = countText(el, 0); });
+
+  // Looping animations (tickers, the floating plate) pause while off screen.
+  if ("IntersectionObserver" in window) {
+    const pauser = new IntersectionObserver((entries) => {
+      for (const entry of entries) entry.target.classList.toggle("is-paused", !entry.isIntersecting);
+    });
+    $$(".ticker, .hero-visual, .page-hero-visual, .mood-badge").forEach((el) => pauser.observe(el));
+  }
 
   /* Toast -------------------------------------------------------------- */
 
@@ -78,7 +178,7 @@
       checkout.textContent = "Call to order";
       note.textContent = "Read us your bag and we'll have it ready.";
     } else {
-      checkout.href = "#find";
+      checkout.href = "visit.html";
       checkout.removeAttribute("target");
       checkout.textContent = "Visit us to order";
       note.textContent = "3rd Ave Rd, Ipaja. Dine-in, takeaway or delivery.";
@@ -114,211 +214,263 @@
     if (inc) setQty(inc.dataset.inc, (bag[inc.dataset.inc] || 0) + 1);
     if (dec) setQty(dec.dataset.dec, (bag[dec.dataset.dec] || 0) - 1);
   });
-  $("#bag-checkout").addEventListener("click", (e) => {
-    if (e.currentTarget.getAttribute("href") === "#find") bagDialog.close();
-  });
+  $("#bag-checkout").addEventListener("click", () => bagDialog.close());
 
   document.addEventListener("click", (e) => {
     const add = e.target.closest("[data-add]");
     if (add) addToBag(add.dataset.add);
   });
 
-  /* Cravings ------------------------------------------------------------ */
+  /* Dish cards (home carousel and menu page) ---------------------------- */
 
-  const chipsEl = $("#craving-chips");
-  const featureImg = $("#feature-img");
-  let featured = D.cravings[0].dish;
-
-  chipsEl.innerHTML = D.cravings.map((c, i) => `
-    <button class="chip" type="button" aria-pressed="${i === 0}" data-dish="${c.dish}">${icon("spark")}${c.label}</button>`).join("");
-
-  function meter(kind, value, label) {
-    const marks = Array.from({ length: 5 }, (_, i) => {
-      const inner = kind === "heat" ? icon("chili") : kind === "napkins" ? icon("napkin") : "";
-      return `<span class="m-${kind}${i < value ? "" : " off"}">${inner}</span>`;
-    }).join("");
-    return `<span class="sr-only">${label}: ${value} out of 5</span><span aria-hidden="true" style="display:contents">${marks}</span>`;
-  }
-
-  function showFeature(id, animate = true) {
-    const d = byId[id];
-    featured = id;
-    $("#feature-name").textContent = d.name;
-    $("#feature-desc").textContent = d.desc;
-    $("#feature-price").textContent = money(d.price);
-    $("#feature-serves").textContent = d.serves;
-    $("#meter-heat").innerHTML = meter("heat", d.heat, "Heat");
-    $("#meter-full").innerHTML = meter("full", d.full, "Belle full");
-    $("#meter-napkins").innerHTML = meter("napkins", d.napkins, "Napkins needed");
-    $("#feature-add").setAttribute("aria-label", `Add ${d.name} to bag`);
-
-    const swap = () => {
-      featureImg.src = d.img;
-      featureImg.alt = d.alt;
-      featureImg.classList.toggle("is-photo", !!d.photo);
-      featureImg.classList.remove("is-swapping");
-    };
-    if (!animate || reduceMotion) return swap();
-    featureImg.classList.add("is-swapping");
-    setTimeout(swap, 200);
-  }
-
-  chipsEl.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip");
-    if (!chip) return;
-    $$(".chip", chipsEl).forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
-    showFeature(chip.dataset.dish);
-  });
-  $("#feature-add").addEventListener("click", () => addToBag(featured));
-  showFeature(featured, false);
-
-  /* Menu lineup --------------------------------------------------------- */
-
-  const filtersEl = $("#menu-filters");
-  const cardsEl = $("#cards");
   const tones = ["red", "white", "ink", "white"];
   const tilts = [-4, 3, -2, 5];
 
-  filtersEl.innerHTML = D.filters.map((f, i) => `
-    <button class="chip" type="button" aria-pressed="${i === 0}" data-filter="${f.id}">${f.label}</button>`).join("");
-
-  function renderCards(filter) {
-    const list = dishes.filter((d) => filter === "all" || d.cat === filter);
-    cardsEl.innerHTML = list.map((d, i) => `
-      <li class="card card--${tones[i % 4]}" style="--tilt:${tilts[i % 4]}deg">
+  function cardHTML(d, i) {
+    return `
+      <li class="card card--${tones[i % 4]}" style="--tilt: ${tilts[i % 4]}deg; --d: ${(i % 4) * 0.08}s" data-reveal>
         ${d.badge ? `<span class="card-badge">${d.badge}</span>` : ""}
-        <img src="${d.img}" alt="${d.alt}" width="600" height="600" loading="lazy" class="${d.photo ? "is-photo" : ""}">
+        <img src="${d.img}" alt="${d.alt}" width="560" height="560" loading="lazy" decoding="async" class="${d.photo ? "is-photo" : ""}">
         <h3>${d.name}</h3>
         <p>${d.desc}</p>
         <div class="card-foot">
           <span class="card-price">${money(d.price)}</span>
           <button class="add-btn" type="button" data-add="${d.id}" aria-label="Add ${d.name} to bag">${icon("plus")}</button>
         </div>
-      </li>`).join("");
-    cardsEl.scrollTo({ left: 0 });
+      </li>`;
   }
 
-  filtersEl.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip");
-    if (!chip) return;
-    $$(".chip", filtersEl).forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
-    renderCards(chip.dataset.filter);
-  });
-  $$("[data-scroll]").forEach((btn) => btn.addEventListener("click", () => {
-    const card = $(".card", cardsEl);
-    const step = card ? card.offsetWidth + 28 : 320;
-    cardsEl.scrollBy({ left: step * Number(btn.dataset.scroll), behavior: reduceMotion ? "auto" : "smooth" });
-  }));
-  renderCards("all");
+  /* Cravings (home) ----------------------------------------------------- */
 
-  /* Drop countdown ------------------------------------------------------ */
+  const chipsEl = $("#craving-chips");
+  if (chipsEl) {
+    const featureImg = $("#feature-img");
+    let featured = D.cravings[0].dish;
 
-  function nextDrop(now = new Date()) {
-    // Lagos is UTC+1 all year, so the drop hour in UTC is one earlier on the same day.
-    const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), D.drop.hour - 1));
-    t.setUTCDate(t.getUTCDate() + ((D.drop.weekday - t.getUTCDay() + 7) % 7));
-    if (t <= now) t.setUTCDate(t.getUTCDate() + 7);
-    return t;
+    chipsEl.innerHTML = D.cravings.map((c, i) => `
+      <button class="chip" type="button" aria-pressed="${i === 0}" data-dish="${c.dish}">${icon("spark")}${c.label}</button>`).join("");
+
+    const meter = (kind, value, label) => {
+      const marks = Array.from({ length: 5 }, (_, i) => {
+        const inner = kind === "heat" ? icon("chili") : kind === "napkins" ? icon("napkin") : "";
+        return `<span class="m-${kind}${i < value ? "" : " off"}">${inner}</span>`;
+      }).join("");
+      return `<span class="sr-only">${label}: ${value} out of 5</span><span aria-hidden="true" style="display:contents">${marks}</span>`;
+    };
+
+    const showFeature = (id, animate = true) => {
+      const d = byId[id];
+      featured = id;
+      $("#feature-name").textContent = d.name;
+      $("#feature-desc").textContent = d.desc;
+      $("#feature-price").textContent = money(d.price);
+      $("#feature-serves").textContent = d.serves;
+      $("#meter-heat").innerHTML = meter("heat", d.heat, "Heat");
+      $("#meter-full").innerHTML = meter("full", d.full, "Belle full");
+      $("#meter-napkins").innerHTML = meter("napkins", d.napkins, "Napkins needed");
+      $("#feature-add").setAttribute("aria-label", `Add ${d.name} to bag`);
+
+      const swap = () => {
+        featureImg.src = d.img;
+        featureImg.alt = d.alt;
+        featureImg.classList.toggle("is-photo", !!d.photo);
+        featureImg.classList.remove("is-swapping");
+      };
+      if (!animate || reduceMotion) return swap();
+      featureImg.classList.add("is-swapping");
+      setTimeout(swap, 200);
+    };
+
+    chipsEl.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      $$(".chip", chipsEl).forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+      showFeature(chip.dataset.dish);
+    });
+    $("#feature-add").addEventListener("click", () => addToBag(featured));
+    showFeature(featured, false);
   }
 
-  const units = Object.fromEntries($$("#countdown [data-unit]").map((el) => [el.dataset.unit, el]));
-  function tick() {
-    let s = Math.max(0, Math.floor((nextDrop() - Date.now()) / 1000));
-    const d = Math.floor(s / 86400); s -= d * 86400;
-    const h = Math.floor(s / 3600); s -= h * 3600;
-    const m = Math.floor(s / 60); s -= m * 60;
-    units.d.textContent = d;
-    units.h.textContent = String(h).padStart(2, "0");
-    units.m.textContent = String(m).padStart(2, "0");
-    units.s.textContent = String(s).padStart(2, "0");
-  }
-  tick();
-  setInterval(tick, 1000);
+  /* Menu carousel (home) ------------------------------------------------ */
 
-  /* Scratch card -------------------------------------------------------- */
+  const cardsEl = $("#cards");
+  if (cardsEl) {
+    const filtersEl = $("#menu-filters");
+    filtersEl.innerHTML = D.filters.map((f, i) => `
+      <button class="chip" type="button" aria-pressed="${i === 0}" data-filter="${f.id}">${f.label}</button>`).join("");
+
+    const renderCards = (filter) => {
+      cardsEl.innerHTML = dishes.filter((d) => filter === "all" || d.cat === filter).map(cardHTML).join("");
+      cardsEl.scrollTo({ left: 0 });
+      observe(cardsEl);
+    };
+
+    filtersEl.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      $$(".chip", filtersEl).forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+      renderCards(chip.dataset.filter);
+    });
+    $$("[data-scroll]").forEach((btn) => btn.addEventListener("click", () => {
+      const card = $(".card", cardsEl);
+      const step = card ? card.offsetWidth + 28 : 320;
+      cardsEl.scrollBy({ left: step * Number(btn.dataset.scroll), behavior: reduceMotion ? "auto" : "smooth" });
+    }));
+    renderCards("all");
+  }
+
+  /* Full menu page ------------------------------------------------------ */
+
+  const menuPage = $("#menu-page");
+  if (menuPage) {
+    const cats = D.filters.filter((f) => f.id !== "all");
+    menuPage.innerHTML = cats.map((c, ci) => {
+      const list = dishes.filter((d) => d.cat === c.id);
+      return `
+        <section class="menu-cat ${ci % 2 ? "bg-peach" : "bg-cream"}" id="${c.id}" aria-labelledby="cat-${c.id}">
+          <div class="container">
+            <div class="menu-cat-head">
+              <div>
+                <span class="count-pill" data-reveal="pop">${list.length} dishes</span>
+                <h2 class="display" id="cat-${c.id}" data-split>${c.label}</h2>
+              </div>
+              <p data-reveal style="--d: .2s">${c.blurb || ""}</p>
+            </div>
+            <ul class="menu-grid">${list.map(cardHTML).join("")}</ul>
+          </div>
+        </section>`;
+    }).join("");
+    $$("[data-split]", menuPage).forEach(splitWords);
+
+    const tabs = $("#menu-tabs");
+    tabs.innerHTML = cats.map((c) => `<a class="chip" href="#${c.id}">${c.label}</a>`).join("");
+    if ("IntersectionObserver" in window) {
+      const spy = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          for (const tab of $$("a", tabs)) {
+            const on = tab.getAttribute("href") === `#${entry.target.id}`;
+            tab.setAttribute("aria-current", String(on));
+            if (on) tabs.scrollTo({ left: tab.offsetLeft - 16, behavior: reduceMotion ? "auto" : "smooth" });
+          }
+        }
+      }, { rootMargin: "-40% 0px -55% 0px" });
+      $$(".menu-cat", menuPage).forEach((s) => spy.observe(s));
+    }
+  }
+
+  /* Drop countdown (home) ----------------------------------------------- */
+
+  const countdown = $("#countdown");
+  if (countdown) {
+    const nextDrop = (now = new Date()) => {
+      // Lagos is UTC+1 all year, so the drop hour in UTC is one earlier on the same day.
+      const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), D.drop.hour - 1));
+      t.setUTCDate(t.getUTCDate() + ((D.drop.weekday - t.getUTCDay() + 7) % 7));
+      if (t <= now) t.setUTCDate(t.getUTCDate() + 7);
+      return t;
+    };
+    const units = Object.fromEntries($$("[data-unit]", countdown).map((el) => [el.dataset.unit, el]));
+    const tick = () => {
+      let s = Math.max(0, Math.floor((nextDrop() - Date.now()) / 1000));
+      const d = Math.floor(s / 86400); s -= d * 86400;
+      const h = Math.floor(s / 3600); s -= h * 3600;
+      const m = Math.floor(s / 60); s -= m * 60;
+      units.d.textContent = d;
+      units.h.textContent = String(h).padStart(2, "0");
+      units.m.textContent = String(m).padStart(2, "0");
+      units.s.textContent = String(s).padStart(2, "0");
+    };
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  /* Scratch card (home) ------------------------------------------------- */
 
   const scratch = $("#scratch");
-  const canvas = $("canvas", scratch);
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  let scratching = false;
-  let last = null;
-  let moves = 0;
+  if (scratch) {
+    const canvas = $("canvas", scratch);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    let scratching = false;
+    let last = null;
+    let moves = 0;
 
-  function paintFoil() {
-    if (scratch.classList.contains("is-revealed")) return;
-    const { width, height } = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.globalCompositeOperation = "source-over";
+    const paintFoil = () => {
+      if (scratch.classList.contains("is-revealed")) return;
+      const { width, height } = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.globalCompositeOperation = "source-over";
 
-    const g = ctx.createLinearGradient(0, 0, width, height);
-    g.addColorStop(0, "#f3e0c4");
-    g.addColorStop(.5, "#fffaf0");
-    g.addColorStop(1, "#e7cfac");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, width, height);
+      const g = ctx.createLinearGradient(0, 0, width, height);
+      g.addColorStop(0, "#f3e0c4");
+      g.addColorStop(.5, "#fffaf0");
+      g.addColorStop(1, "#e7cfac");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = "rgba(217, 21, 29, .16)";
-    for (let y = 14; y < height; y += 30) {
-      for (let x = (y / 30) % 2 ? 10 : 25; x < width; x += 30) {
-        ctx.beginPath();
-        ctx.moveTo(x, y - 6); ctx.quadraticCurveTo(x + 1, y - 1, x + 6, y);
-        ctx.quadraticCurveTo(x + 1, y + 1, x, y + 6); ctx.quadraticCurveTo(x - 1, y + 1, x - 6, y);
-        ctx.quadraticCurveTo(x - 1, y - 1, x, y - 6); ctx.fill();
+      ctx.fillStyle = "rgba(217, 21, 29, .16)";
+      for (let y = 14; y < height; y += 30) {
+        for (let x = (y / 30) % 2 ? 10 : 25; x < width; x += 30) {
+          ctx.beginPath();
+          ctx.moveTo(x, y - 6); ctx.quadraticCurveTo(x + 1, y - 1, x + 6, y);
+          ctx.quadraticCurveTo(x + 1, y + 1, x, y + 6); ctx.quadraticCurveTo(x - 1, y + 1, x - 6, y);
+          ctx.quadraticCurveTo(x - 1, y - 1, x, y - 6); ctx.fill();
+        }
       }
-    }
-    ctx.fillStyle = "#141211";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = '400 30px "Bagel Fat One", sans-serif';
-    ctx.fillText("Scratch me!", width / 2, height / 2 - 10);
-    ctx.font = '700 14px "DM Sans", sans-serif';
-    ctx.fillText("Today's deal is hiding under here", width / 2, height / 2 + 24);
+      ctx.fillStyle = "#141211";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = '400 30px "Bagel Fat One", sans-serif';
+      ctx.fillText("Scratch me!", width / 2, height / 2 - 10);
+      ctx.font = '700 14px "DM Sans", sans-serif';
+      ctx.fillText("Today's deal is hiding under here", width / 2, height / 2 + 24);
+    };
+
+    const revealDeal = () => {
+      scratch.classList.add("is-revealed");
+      toast("Deal unlocked: free dodo with any combo");
+    };
+
+    const clearedRatio = () => {
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let clear = 0, total = 0;
+      for (let i = 3; i < data.length; i += 4 * 24) { total++; if (data[i] === 0) clear++; }
+      return clear / total;
+    };
+
+    const scratchAt = (e) => {
+      // offsetX/Y are in the canvas's own (untilted) coordinates
+      const p = { x: e.offsetX, y: e.offsetY };
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 42;
+      ctx.beginPath();
+      ctx.moveTo((last || p).x, (last || p).y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      last = p;
+      if (++moves % 12 === 0 && clearedRatio() > 0.5) revealDeal();
+    };
+
+    canvas.addEventListener("pointerdown", (e) => { scratching = true; last = null; canvas.setPointerCapture(e.pointerId); scratchAt(e); });
+    canvas.addEventListener("pointermove", (e) => { if (scratching) scratchAt(e); });
+    const stop = () => {
+      if (!scratching) return;
+      scratching = false;
+      if (!scratch.classList.contains("is-revealed") && clearedRatio() > 0.5) revealDeal();
+    };
+    canvas.addEventListener("pointerup", stop);
+    canvas.addEventListener("pointercancel", stop);
+    $(".scratch-reveal", scratch).addEventListener("click", revealDeal);
+
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(paintFoil);
+    let resizeTimer;
+    addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(paintFoil, 150); });
   }
-
-  function reveal() {
-    scratch.classList.add("is-revealed");
-    toast("Deal unlocked: free dodo with any combo");
-  }
-
-  function clearedRatio() {
-    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let clear = 0, total = 0;
-    for (let i = 3; i < data.length; i += 4 * 24) { total++; if (data[i] === 0) clear++; }
-    return clear / total;
-  }
-
-  function scratchAt(e) {
-    // offsetX/Y are in the canvas's own (untilted) coordinates
-    const p = { x: e.offsetX, y: e.offsetY };
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = 42;
-    ctx.beginPath();
-    ctx.moveTo((last || p).x, (last || p).y);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-    last = p;
-    if (++moves % 12 === 0 && clearedRatio() > 0.5) reveal();
-  }
-
-  canvas.addEventListener("pointerdown", (e) => { scratching = true; last = null; canvas.setPointerCapture(e.pointerId); scratchAt(e); });
-  canvas.addEventListener("pointermove", (e) => { if (scratching) scratchAt(e); });
-  const stop = () => {
-    if (!scratching) return;
-    scratching = false;
-    if (!scratch.classList.contains("is-revealed") && clearedRatio() > 0.5) reveal();
-  };
-  canvas.addEventListener("pointerup", stop);
-  canvas.addEventListener("pointercancel", stop);
-  $(".scratch-reveal", scratch).addEventListener("click", reveal);
-
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(paintFoil);
-  let resizeTimer;
-  addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(paintFoil, 150); });
 
   /* Kitchen sizzle sound ------------------------------------------------ */
 
@@ -404,13 +556,39 @@
   });
   email.addEventListener("input", () => { email.removeAttribute("aria-invalid"); msg.textContent = ""; });
 
-  /* Footer links ------------------------------------------------------ */
+  /* Links and numbers from data.js -------------------------------------- */
 
   for (const [label, url] of Object.entries(D.links || {})) {
     if (!url) continue;
     $("#footer-pills").insertAdjacentHTML("beforeend", `<li><a class="pill" href="${url}" target="_blank" rel="noopener">${label}</a></li>`);
   }
 
+  // Order buttons on the Find us page only appear once their number or link is set.
+  const contact = {
+    whatsapp: D.whatsapp && `https://wa.me/${D.whatsapp}`,
+    phone: D.phone && `tel:${D.phone}`,
+    chowdeck: D.links && D.links.Chowdeck,
+  };
+  $$("[data-contact]").forEach((el) => {
+    const url = contact[el.dataset.contact];
+    if (url) el.href = url; else el.remove();
+  });
+
+  $$("[data-dish-count]").forEach((el) => {
+    el.dataset.count = dishes.length;
+    el.textContent = reduceMotion ? dishes.length : countText(el, 0);
+  });
+
   $("#year").textContent = new Date().getFullYear();
   renderBag();
+
+  /* Start the intro once fonts are in (or after 1.2s at most) ------------ */
+
+  const ready = () => {
+    root.classList.add("is-loaded");
+    revealReady = true;
+    observe();
+  };
+  if (reduceMotion) ready();
+  else Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise((r) => setTimeout(r, 1200))]).then(ready);
 })();
