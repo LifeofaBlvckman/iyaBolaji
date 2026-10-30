@@ -11,6 +11,15 @@
 <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5fae45"/><stop offset="1" stop-color="#2a6422"/></linearGradient>
 <linearGradient id="chicken" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaa54e"/><stop offset=".55" stop-color="#c26e24"/><stop offset="1" stop-color="#7d3a0e"/></linearGradient>
 <linearGradient id="goat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a4a20"/><stop offset="1" stop-color="#3f1807"/></linearGradient>
+<radialGradient id="eba" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff1b8"/><stop offset=".6" stop-color="#ecc75e"/><stop offset="1" stop-color="#c99a32"/></radialGradient>
+<radialGradient id="fufu" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".65" stop-color="#ece6d8"/><stop offset="1" stop-color="#c9c0ab"/></radialGradient>
+<radialGradient id="semo" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#efe0bd"/><stop offset="1" stop-color="#cdb486"/></radialGradient>
+<linearGradient id="ponmo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0c48c"/><stop offset="1" stop-color="#b9783f"/></linearGradient>
+<radialGradient id="liver" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#8e3a2c"/><stop offset="1" stop-color="#3d0f0a"/></radialGradient>
+<radialGradient id="bokoto" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#f6d7a6"/><stop offset=".6" stop-color="#d9a066"/><stop offset="1" stop-color="#a5622c"/></radialGradient>
+<linearGradient id="yamcube" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe7a0"/><stop offset="1" stop-color="#e3a43a"/></linearGradient>
+<linearGradient id="croaker" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b86e"/><stop offset=".5" stop-color="#b8742f"/><stop offset="1" stop-color="#6c3812"/></linearGradient>
+<linearGradient id="fry" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#e2a13a"/></linearGradient>
 
 <linearGradient id="zobo" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c22c45"/><stop offset=".35" stop-color="#8f1730"/><stop offset="1" stop-color="#4f0814"/></linearGradient>
 <pattern id="stripe" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="24" height="24" fill="#fffaf2"/><rect width="12" height="24" fill="#d9151d"/></pattern>

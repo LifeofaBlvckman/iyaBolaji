@@ -2,7 +2,9 @@
   const D = window.IYA;
   const $ = (sel, el = document) => el.querySelector(sel);
   const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
-  const byId = Object.fromEntries(D.dishes.map((d) => [d.id, d]));
+  // Dishes without a price stay in data.js but aren't shown until priced.
+  const dishes = D.dishes.filter((d) => d.price != null);
+  const byId = Object.fromEntries(dishes.map((d) => [d.id, d]));
   const money = (n) => D.currency + n.toLocaleString("en-NG");
   const icon = (id, cls = "") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -181,7 +183,7 @@
     <button class="chip" type="button" aria-pressed="${i === 0}" data-filter="${f.id}">${f.label}</button>`).join("");
 
   function renderCards(filter) {
-    const list = D.dishes.filter((d) => filter === "all" || d.cat === filter);
+    const list = dishes.filter((d) => filter === "all" || d.cat === filter);
     cardsEl.innerHTML = list.map((d, i) => `
       <li class="card card--${tones[i % 4]}" style="--tilt:${tilts[i % 4]}deg">
         ${d.badge ? `<span class="card-badge">${d.badge}</span>` : ""}
@@ -278,7 +280,7 @@
 
   function reveal() {
     scratch.classList.add("is-revealed");
-    toast("Deal unlocked: free dodo with any rice plate");
+    toast("Deal unlocked: free dodo with any combo");
   }
 
   function clearedRatio() {

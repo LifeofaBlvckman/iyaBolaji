@@ -26,7 +26,7 @@ Then visit http://localhost:8000.
 
 ## Common edits
 
-**Prices and dishes**: change the `dishes` list in `js/data.js`. Each dish has a name, category, badge, price (naira), description and 0–5 ratings for heat, "belle full" and napkins.
+**Prices and dishes**: change the `dishes` list in `js/data.js` (it mirrors the Chowdeck menu). Each dish has a name, category, badge, price (naira), description and 0–5 ratings for heat, "belle full" and napkins. A dish with `price: null` stays in the file but is hidden on the site until it has a price.
 
 **Real food photos**: put the photo in `assets/img/` (create the folder), then in `js/data.js` set the dish's `img` to that path and add `photo: true`. Photos get a framed, rounded crop. Illustrations stay cut-outs. The big hero plate, the "why" photo and the drop photo are set directly in `index.html`.
 

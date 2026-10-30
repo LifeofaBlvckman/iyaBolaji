@@ -65,6 +65,15 @@ DEFS = """
 <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5fae45"/><stop offset="1" stop-color="#2a6422"/></linearGradient>
 <linearGradient id="chicken" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaa54e"/><stop offset=".55" stop-color="#c26e24"/><stop offset="1" stop-color="#7d3a0e"/></linearGradient>
 <linearGradient id="goat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a4a20"/><stop offset="1" stop-color="#3f1807"/></linearGradient>
+<radialGradient id="eba" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff1b8"/><stop offset=".6" stop-color="#ecc75e"/><stop offset="1" stop-color="#c99a32"/></radialGradient>
+<radialGradient id="fufu" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".65" stop-color="#ece6d8"/><stop offset="1" stop-color="#c9c0ab"/></radialGradient>
+<radialGradient id="semo" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#efe0bd"/><stop offset="1" stop-color="#cdb486"/></radialGradient>
+<linearGradient id="ponmo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0c48c"/><stop offset="1" stop-color="#b9783f"/></linearGradient>
+<radialGradient id="liver" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#8e3a2c"/><stop offset="1" stop-color="#3d0f0a"/></radialGradient>
+<radialGradient id="bokoto" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#f6d7a6"/><stop offset=".6" stop-color="#d9a066"/><stop offset="1" stop-color="#a5622c"/></radialGradient>
+<linearGradient id="yamcube" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe7a0"/><stop offset="1" stop-color="#e3a43a"/></linearGradient>
+<linearGradient id="croaker" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b86e"/><stop offset=".5" stop-color="#b8742f"/><stop offset="1" stop-color="#6c3812"/></linearGradient>
+<linearGradient id="fry" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#e2a13a"/></linearGradient>
 """
 
 
@@ -90,7 +99,7 @@ def shadow(cx, cy, rx, ry, opacity=0.35):
     return f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="#2b0a05" opacity="{opacity}" filter="url(#soft)"/>'
 
 
-def rice(rng, cx, cy, r, palette, grains=650, bits=()):
+def rice(rng, cx, cy, r, palette, grains=650, bits=(), length=1.0):
     out = [f'<path d="{blob(rng, cx, cy, r * 1.02, r * 0.95, 12, 0.07)}" fill="{palette[-1]}"/>']
     for _ in range(grains):
         x, y, d = in_ellipse(rng, cx, cy, r * 0.97, r * 0.9)
@@ -99,7 +108,7 @@ def rice(rng, cx, cy, r, palette, grains=650, bits=()):
         col = rng.choice(palette[3:]) if shade else rng.choice(palette[:4])
         s = r / 170
         out.append(
-            f'<ellipse cx="{n(x)}" cy="{n(y)}" rx="{n(8.5 * s)}" ry="{n(3.4 * s)}" fill="{col}" '
+            f'<ellipse cx="{n(x)}" cy="{n(y)}" rx="{n(8.5 * s * length)}" ry="{n(3.4 * s)}" fill="{col}" '
             f'transform="rotate({rng.randint(0, 179)} {n(x)} {n(y)})"/>'
         )
     for colour, count, size in bits:
@@ -124,8 +133,7 @@ def turkey(rng, cx, cy, length, width, rot):
     a = math.radians(rot)
     out = [
         f'<path d="{blob(rng, cx + 6, cy + 9, length / 2, width / 2, 12, 0.1, a)}" fill="#3a1404" opacity=".45"/>',
-        f'<path d="{blob(rng, cx, cy, length / 2, width / 2, 12, 0.1, a)}" fill="url(#turkey)" '
-        f'transform="rotate(0)"/>',
+        f'<path d="{blob(rng, cx, cy, length / 2, width / 2, 12, 0.1, a)}" fill="url(#turkey)"/>',
     ]
     ca, sa = math.cos(a), math.sin(a)
     # crisp ridges running along the wing
@@ -218,49 +226,381 @@ def drumstick(rng, cx, cy, size, rot):
     return out
 
 
+# ---------------------------------------------------------------- more components
+
+def dome(rng, cx, cy, r, grad, speck="#000"):
+    """A wrap of swallow (eba, fufu, semo, amala) seen from above."""
+    out = [
+        shadow(cx + 4, cy + 10, r, r * 0.95, 0.4),
+        f'<path d="{blob(rng, cx, cy, r, r * 0.95, 10, 0.05)}" fill="url(#{grad})"/>',
+        f'<ellipse cx="{n(cx - r * 0.3)}" cy="{n(cy - r * 0.36)}" rx="{n(r * 0.38)}" ry="{n(r * 0.15)}" fill="#fff" opacity=".5" transform="rotate(-22 {n(cx - r * 0.3)} {n(cy - r * 0.36)})"/>',
+    ]
+    for _ in range(int(r * 0.5)):
+        x, y, _d = in_ellipse(rng, cx, cy, r * 0.85, r * 0.8)
+        out.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="{n(rng.uniform(1, 2.2))}" fill="{speck}" opacity=".25"/>')
+    return out
+
+
+def egg(cx, cy, r, rot=0):
+    return [
+        f'<ellipse cx="{cx + 3}" cy="{cy + 6}" rx="{r}" ry="{n(r * 0.78)}" fill="#3a1404" opacity=".3" transform="rotate({rot} {cx} {cy})"/>',
+        f'<ellipse cx="{cx}" cy="{cy}" rx="{r}" ry="{n(r * 0.78)}" fill="#fffaf0" transform="rotate({rot} {cx} {cy})"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{n(r * 0.42)}" fill="#f2ae25"/>',
+        f'<circle cx="{n(cx - r * 0.12)}" cy="{n(cy - r * 0.12)}" r="{n(r * 0.16)}" fill="#ffd56a"/>',
+    ]
+
+
+def glaze(rng, cx, cy, rx, ry, dabs=6):
+    """Red pepper sauce dabs and flecks over a piece of meat or fish."""
+    out = []
+    for _ in range(dabs):
+        x, y, _d = in_ellipse(rng, cx, cy, rx, ry)
+        out.append(f'<path d="{blob(rng, x, y, rng.uniform(6, 13), rng.uniform(4, 8), 7, 0.3, rng.random() * 3)}" fill="{rng.choice(["#c42a1a", "#d8401d", "#a8170d"])}" opacity=".9"/>')
+    for _ in range(dabs):
+        x, y, _d = in_ellipse(rng, cx, cy, rx, ry)
+        out.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="{n(rng.uniform(1.5, 3))}" fill="{rng.choice(["#f3c48a", "#7d120a", "#3f8a2f"])}"/>')
+    return out
+
+
+def beef(rng, cx, cy, r):
+    return goat(rng, cx, cy, r) + glaze(rng, cx, cy, r * 0.7, r * 0.5, 4)
+
+
+def ponmo(rng, cx, cy, w, h, rot):
+    return [
+        f'<g transform="rotate({rot} {cx} {cy})">',
+        f'<rect x="{n(cx - w / 2 + 4)}" y="{n(cy - h / 2 + 6)}" width="{w}" height="{h}" rx="{n(h / 2)}" fill="#3a1404" opacity=".35"/>',
+        f'<rect x="{n(cx - w / 2)}" y="{n(cy - h / 2)}" width="{w}" height="{h}" rx="{n(h / 2)}" fill="url(#ponmo)"/>',
+        f'<path d="M{n(cx - w * 0.34)} {cy}H{n(cx + w * 0.34)}" stroke="#9c5f2c" stroke-width="{n(h * 0.16)}" stroke-linecap="round" opacity=".5"/>',
+        *glaze(rng, cx, cy, w * 0.4, h * 0.35, 3),
+        "</g>",
+    ]
+
+
+def shaki(rng, cx, cy, r):
+    out = [
+        f'<path d="{blob(rng, cx + 4, cy + 6, r, r * 0.75, 8, 0.2)}" fill="#3a1404" opacity=".3"/>',
+        f'<path d="{blob(rng, cx, cy, r, r * 0.75, 8, 0.2, rng.random() * 3)}" fill="#d6c3a2"/>',
+    ]
+    for _ in range(int(r * 0.7)):
+        x, y, _d = in_ellipse(rng, cx, cy, r * 0.75, r * 0.5)
+        out.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="{n(rng.uniform(2.5, 4.5))}" fill="none" stroke="#a48b66" stroke-width="1.6"/>')
+    return out + glaze(rng, cx, cy, r * 0.6, r * 0.4, 3)
+
+
+def liver(rng, cx, cy, r):
+    return [
+        f'<path d="{blob(rng, cx + 4, cy + 6, r, r * 0.7, 8, 0.15)}" fill="#200a02" opacity=".35"/>',
+        f'<path d="{blob(rng, cx, cy, r, r * 0.7, 8, 0.15, rng.random() * 3)}" fill="url(#liver)"/>',
+        f'<ellipse cx="{n(cx - r * 0.25)}" cy="{n(cy - r * 0.25)}" rx="{n(r * 0.35)}" ry="{n(r * 0.12)}" fill="#d07a64" opacity=".45"/>',
+    ] + glaze(rng, cx, cy, r * 0.6, r * 0.4, 2)
+
+
+def roundabout(rng, cx, cy, r):
+    return [
+        f'<circle cx="{cx + 4}" cy="{cy + 6}" r="{r}" fill="none" stroke="#3a1404" stroke-opacity=".3" stroke-width="{n(r * 0.6)}"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#e9cda4" stroke-width="{n(r * 0.6)}"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{n(r * 1.18)}" fill="none" stroke="#c49a6b" stroke-width="2"/>',
+    ] + glaze(rng, cx, cy, r, r, 2)
+
+
+def bokoto_piece(rng, cx, cy, r):
+    return [
+        f'<path d="{blob(rng, cx + 4, cy + 7, r, r * 0.85, 9, 0.18)}" fill="#3a1404" opacity=".35"/>',
+        f'<path d="{blob(rng, cx, cy, r, r * 0.85, 9, 0.18, rng.random() * 3)}" fill="url(#bokoto)"/>',
+        f'<circle cx="{n(cx + r * 0.22)}" cy="{n(cy - r * 0.1)}" r="{n(r * 0.3)}" fill="#fbf3e1"/>',
+        f'<circle cx="{n(cx + r * 0.22)}" cy="{n(cy - r * 0.1)}" r="{n(r * 0.13)}" fill="#c98a5a"/>',
+    ] + glaze(rng, cx, cy, r * 0.7, r * 0.6, 5)
+
+
+def noodles(rng, cx, cy, r, strands=120):
+    out = [f'<path d="{blob(rng, cx, cy, r, r * 0.92, 12, 0.08)}" fill="#c98d3c"/>']
+    for _ in range(strands):
+        x, y, _d = in_ellipse(rng, cx, cy, r * 0.82, r * 0.78)
+        a, length = rng.uniform(0, 6.28), rng.uniform(30, 70)
+        x2, y2 = x + math.cos(a) * length, y + math.sin(a) * length
+        mx, my = (x + x2) / 2 + rng.uniform(-25, 25), (y + y2) / 2 + rng.uniform(-25, 25)
+        out.append(f'<path d="M{n(x)} {n(y)}Q{n(mx)} {n(my)} {n(x2)} {n(y2)}" fill="none" stroke="{rng.choice(["#f2c978", "#e9b860", "#dca04a", "#c98a37"])}" stroke-width="5" stroke-linecap="round"/>')
+    return out
+
+
+def slaw(rng, cx, cy, r):
+    out = [f'<path d="{blob(rng, cx, cy, r, r * 0.9, 12, 0.1)}" fill="#eef1da"/>']
+    for colours, count in ((["#f7f8ea", "#dfe9c2", "#cfe0a8", "#ffffff"], 260), (["#f08a2c", "#f6a24a"], 60)):
+        for _ in range(count):
+            x, y, _d = in_ellipse(rng, cx, cy, r * 0.9, r * 0.82)
+            a, length = rng.uniform(0, 3.14), rng.uniform(12, 30)
+            out.append(f'<path d="M{n(x)} {n(y)}l{n(math.cos(a) * length)} {n(math.sin(a) * length)}" stroke="{rng.choice(colours)}" stroke-width="3.2" stroke-linecap="round"/>')
+    return out
+
+
+def fries(rng, cx, cy, rx, ry, count=26):
+    out = []
+    for _ in range(count):
+        x, y, _d = in_ellipse(rng, cx, cy, rx, ry)
+        length, rot = rng.uniform(60, 95), rng.randint(0, 179)
+        out.append(f'<rect x="{n(x - length / 2)}" y="{n(y - 7)}" width="{n(length)}" height="14" rx="5" fill="url(#fry)" stroke="#c98a2e" stroke-width="1" transform="rotate({rot} {n(x)} {n(y)})"/>')
+    return out
+
+
+def croaker(rng, cx, cy, length, rot):
+    h = length * 0.3
+    L = length
+    body = (f"M{n(-L * 0.5)} 0C{n(-L * 0.38)} {n(-h)} {n(L * 0.15)} {n(-h * 1.05)} {n(L * 0.3)} {n(-h * 0.15)}"
+            f"L{n(L * 0.5)} {n(-h * 0.7)}Q{n(L * 0.43)} 0 {n(L * 0.5)} {n(h * 0.7)}L{n(L * 0.3)} {n(h * 0.15)}"
+            f"C{n(L * 0.15)} {n(h * 1.05)} {n(-L * 0.38)} {n(h)} {n(-L * 0.5)} 0Z")
+    out = [f'<g transform="translate({cx} {cy}) rotate({rot})">',
+           f'<path d="{body}" fill="#3a1404" opacity=".35" transform="translate(6 9)"/>',
+           f'<path d="{body}" fill="url(#croaker)"/>']
+    for i in range(4):
+        x = -L * 0.2 + i * L * 0.11
+        out.append(f'<path d="M{n(x)} {n(-h * 0.6)}q{n(L * 0.04)} {n(h * 0.6)} 0 {n(h * 1.2)}" fill="none" stroke="#5a2a0c" stroke-width="5" stroke-linecap="round" opacity=".7"/>')
+    out.append(f'<circle cx="{n(-L * 0.36)}" cy="{n(-h * 0.18)}" r="{n(L * 0.03)}" fill="#fff8e8"/>')
+    out.append(f'<circle cx="{n(-L * 0.36)}" cy="{n(-h * 0.18)}" r="{n(L * 0.014)}" fill="#141211"/>')
+    out += glaze(rng, 0, 0, L * 0.3, h * 0.5, 8)
+    out.append("</g>")
+    return out
+
+
+def yam_chunks(rng, cx, cy, rx, ry, count=12):
+    out = []
+    for _ in range(count):
+        x, y, _d = in_ellipse(rng, cx, cy, rx, ry)
+        s, rot = rng.uniform(30, 44), rng.randint(0, 89)
+        out.append(f'<rect x="{n(x - s / 2 + 3)}" y="{n(y - s / 2 + 5)}" width="{n(s)}" height="{n(s)}" rx="9" fill="#5a1d06" opacity=".35" transform="rotate({rot} {n(x)} {n(y)})"/>')
+        out.append(f'<rect x="{n(x - s / 2)}" y="{n(y - s / 2)}" width="{n(s)}" height="{n(s)}" rx="9" fill="url(#yamcube)" transform="rotate({rot} {n(x)} {n(y)})"/>')
+    return out
+
+
+def soup(rng, cx, cy, r, base, specks, oil=True):
+    out = [f'<path d="{blob(rng, cx, cy, r, r * 0.95, 14, 0.06)}" fill="{base}"/>']
+    for colours, count, lo, hi in specks:
+        for _ in range(count):
+            x, y, _d = in_ellipse(rng, cx, cy, r * 0.9, r * 0.85)
+            size = rng.uniform(lo, hi)
+            out.append(f'<path d="{blob(rng, x, y, size, size * 0.7, 6, 0.35, rng.random() * 3)}" fill="{rng.choice(colours)}"/>')
+    if oil:
+        for _ in range(12):
+            x, y, _d = in_ellipse(rng, cx, cy, r * 0.85, r * 0.8)
+            out.append(f'<ellipse cx="{n(x)}" cy="{n(y)}" rx="{n(rng.uniform(10, 22))}" ry="{n(rng.uniform(3, 6))}" fill="#e2541c" opacity=".45"/>')
+    return out
+
+
+EGUSI = [(["#e8c35e", "#d7aa45", "#f0d27c"], 170, 5, 12), (["#2f6b2f", "#3f8a3a"], 45, 6, 12)]
+EFO = [(["#3f7a26", "#24481a", "#5b8f33"], 240, 5, 12), (["#c42a1a", "#e2531f"], 45, 3, 6)]
+EWEDU = [(["#2b5417", "#5f9439", "#76a84a"], 260, 1.5, 3.5)]
+
+
 # ---------------------------------------------------------------- dishes
 
 JOLLOF = ["#f6a75a", "#f39243", "#ef7a32", "#e4632a", "#d9531f", "#c94a1a", "#b8401a"]
 FRIED = ["#f5dd94", "#f0d27a", "#e9c766", "#dcb24e", "#cfa443", "#bf9236", "#b0852e"]
+WHITE = ["#ffffff", "#fdfaf3", "#f7f1e4", "#efe7d6", "#e6dcc6", "#dacdb2", "#cdbf9f"]
+OFADA = ["#f3e8d2", "#e9dcc0", "#dcc9a5", "#cdb48a", "#b99a6c", "#a5845a", "#8f6f48"]
 GARNISH = (("#3f8a2f", 14, 6), ("#e8331c", 10, 5), ("#f3e3c4", 8, 5))
+VEG = (("#5a9a2e", 40, 5), ("#f07a24", 40, 5), ("#f3e3c4", 10, 5))
 
 
-def jollof_combo():
+def base():
+    return plate(300, 300, 280)
+
+
+def side_dodo(rng, spots):
+    out = []
+    for cx, cy, rot in spots:
+        out += dodo(rng, cx, cy, 44, 28, rot)
+    return out
+
+
+def jollof_enjoyment():
     rng = random.Random(7)
-    b = plate(300, 300, 280)
-    b += rice(rng, 250, 300, 170, JOLLOF, 700, GARNISH)
-    b += turkey(rng, 395, 235, 250, 118, -58)
-    for cx, cy, rot in ((360, 430, 20), (420, 405, -15), (465, 350, 40), (395, 470, -30)):
-        b += dodo(rng, cx, cy, 44, 28, rot)
+    b = base() + rice(rng, 245, 300, 168, JOLLOF, 700, GARNISH)
+    b += beef(rng, 395, 205, 42) + beef(rng, 452, 285, 38) + egg(380, 368, 42, -20)
+    b += side_dodo(rng, ((300, 462, 20), (378, 455, -15), (445, 410, 40)))
     return svg(600, 600, b)
 
 
-def peppered_turkey():
+def royal_basmati():
+    rng = random.Random(9)
+    b = base() + rice(rng, 245, 300, 168, FRIED, 520, VEG, length=1.6)
+    b += beef(rng, 395, 210, 42) + beef(rng, 452, 292, 38)
+    b += side_dodo(rng, ((318, 458, 20), (395, 448, -15), (455, 385, 40)))
+    return svg(600, 600, b)
+
+
+def white_rice_special():
+    rng = random.Random(13)
+    b = base() + rice(rng, 245, 300, 165, WHITE, 650)
+    b += sauce(rng, 235, 255, 95, 60)
+    b += beef(rng, 395, 195, 38) + shaki(rng, 458, 275, 38) + egg(425, 365, 40, 15)
+    b += side_dodo(rng, ((300, 462, 20), (370, 460, -15)))
+    return svg(600, 600, b)
+
+
+def ofada_special():
+    rng = random.Random(17)
+    b = base() + rice(rng, 245, 300, 165, OFADA, 650, (("#8f3a1c", 30, 3),), length=0.8)
+    b += liver(rng, 395, 195, 36) + shaki(rng, 458, 270, 36) + roundabout(rng, 380, 270, 18) + egg(430, 368, 40, -10)
+    b += side_dodo(rng, ((300, 462, 20), (370, 460, -15)))
+    return svg(600, 600, b)
+
+
+def basmati_fried_rice():
+    rng = random.Random(53)
+    return svg(600, 600, base() + rice(rng, 300, 300, 210, FRIED, 800, VEG, length=1.6))
+
+
+def jollof_rice():
+    rng = random.Random(19)
+    return svg(600, 600, base() + rice(rng, 300, 300, 210, JOLLOF, 950, GARNISH))
+
+
+def ofada_rice():
+    rng = random.Random(23)
+    return svg(600, 600, base() + rice(rng, 300, 300, 210, OFADA, 950, (("#8f3a1c", 45, 3),), length=0.8))
+
+
+def stir_fry_spaghetti():
+    rng = random.Random(29)
+    b = base() + noodles(rng, 300, 300, 200)
+    for _ in range(14):
+        x, y, _d = in_ellipse(rng, 300, 300, 150, 140)
+        b.append(pepper_strip(round(x), round(y), rng.randint(30, 50), rng.randint(0, 179), rng.choice(["#3f8a2f", "#e8331c", "#f07a24"])))
+    for _ in range(7):
+        x, y, _d = in_ellipse(rng, 300, 300, 140, 130)
+        b.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="15" fill="#c8735a" stroke="#9c4f3a" stroke-width="3"/>')
+    return svg(600, 600, b)
+
+
+def porridge():
+    rng = random.Random(31)
+    b = base() + soup(rng, 300, 300, 215, "#d9661f", [(["#e5772a", "#c9501a"], 80, 5, 10), (["#2f6b2f", "#3f8a3a"], 30, 6, 12)])
+    b += yam_chunks(rng, 300, 300, 160, 150, 14)
+    return svg(600, 600, b)
+
+
+def chicken_chips():
+    rng = random.Random(37)
+    b = base() + fries(rng, 215, 330, 105, 120, 30)
+    b += drumstick(rng, 365, 230, 130, -35) + drumstick(rng, 390, 370, 125, 5)
+    b += ['<circle cx="190" cy="175" r="44" fill="#fffaf2" stroke="#e6dac4" stroke-width="3"/>', '<circle cx="190" cy="175" r="33" fill="#c91d14"/>']
+    return svg(600, 600, b)
+
+
+def fried_chicken():
+    rng = random.Random(41)
+    b = base() + drumstick(rng, 215, 250, 140, -20) + drumstick(rng, 330, 210, 135, 35) + drumstick(rng, 300, 370, 140, -5)
+    return svg(600, 600, b)
+
+
+def amala_feast():
+    rng = random.Random(43)
+    b = base() + soup(rng, 385, 320, 160, "#3f6e25", EWEDU, oil=False)
+    b += soup(rng, 430, 405, 85, "#dba140", [(["#bf8a2a"], 50, 1.5, 3)], oil=False)
+    b += sauce(rng, 360, 195, 85, 55) + beef(rng, 335, 195, 32) + beef(rng, 400, 205, 30)
+    b += dome(rng, 190, 225, 92, "amala") + dome(rng, 205, 385, 90, "amala")
+    return svg(600, 600, b)
+
+
+def semo_combo():
+    rng = random.Random(47)
+    b = base() + soup(rng, 380, 330, 165, "#2f5a1c", EFO)
+    b += beef(rng, 380, 230, 36) + beef(rng, 445, 310, 34) + ponmo(rng, 375, 420, 90, 32, -20)
+    b += dome(rng, 195, 270, 118, "semo", "#8a6d3b")
+    return svg(600, 600, b)
+
+
+def swallow(grad, speck, seed):
+    rng = random.Random(seed)
+    return svg(600, 600, base() + dome(rng, 300, 300, 170, grad, speck))
+
+
+def egusi():
+    rng = random.Random(59)
+    b = base() + soup(rng, 300, 300, 215, "#c99a3a", EGUSI)
+    b += beef(rng, 250, 250, 38) + beef(rng, 360, 350, 36)
+    return svg(600, 600, b)
+
+
+def efo_riro():
+    rng = random.Random(61)
+    b = base() + soup(rng, 300, 300, 215, "#2f5a1c", EFO)
+    b += beef(rng, 245, 260, 38) + ponmo(rng, 360, 340, 90, 32, 25)
+    return svg(600, 600, b)
+
+
+def fried_turkey():
     rng = random.Random(11)
-    b = plate(300, 300, 280)
-    b += turkey(rng, 225, 285, 270, 120, -62)
-    b += turkey(rng, 330, 275, 280, 124, -70)
-    b += turkey(rng, 410, 330, 240, 110, -52)
+    b = base() + turkey(rng, 225, 285, 270, 120, -62) + turkey(rng, 330, 275, 280, 124, -70) + turkey(rng, 410, 330, 240, 110, -52)
     for cx, cy, r, rot in ((170, 430, 22, 20), (430, 180, 20, -30), (300, 450, 18, 60)):
         b += onion(cx, cy, r, rot)
-    b += [pepper_strip(210, 160, 46, 30, "#3f8a2f"), pepper_strip(450, 440, 40, -40, "#e8331c")]
     return svg(600, 600, b)
 
 
-def fish_stew():
+def bokoto():
+    rng = random.Random(67)
+    b = base() + sauce(rng, 300, 300, 210, 200)
+    for cx, cy, r in ((225, 235, 52), (340, 220, 48), (400, 320, 50), (285, 330, 54), (215, 395, 44), (335, 420, 46)):
+        b += bokoto_piece(rng, cx, cy, r)
+    return svg(600, 600, b)
+
+
+def asun():
+    rng = random.Random(71)
+    b = base()
+    for cx, cy, r in ((230, 230, 42), (310, 205, 38), (385, 240, 40), (205, 315, 38), (290, 290, 44), (380, 325, 40), (240, 395, 40), (325, 380, 42), (410, 405, 34)):
+        b += beef(rng, cx, cy, r)
+    for cx, cy, rot, colour in ((265, 255, 30, "#e8331c"), (350, 300, -20, "#3f8a2f"), (260, 350, 70, "#e8331c"), (345, 245, 10, "#3f8a2f")):
+        b.append(pepper_strip(cx, cy, 52, rot, colour))
+    b += onion(300, 340, 22, 15) + onion(230, 280, 20, -25) + onion(390, 280, 18, 40)
+    return svg(600, 600, b)
+
+
+def croaker_fish():
+    rng = random.Random(73)
+    b = base() + sauce(rng, 300, 300, 215, 205) + croaker(rng, 300, 300, 400, -25)
+    b += onion(180, 420, 22, 20) + onion(420, 190, 20, -30)
+    return svg(600, 600, b)
+
+
+def eja_kika():
     rng = random.Random(23)
-    b = plate(300, 300, 280)
-    b += sauce(rng, 300, 300, 215, 210)
-    b += fish(rng, 225, 230, 170, 110, -20)
-    b += fish(rng, 370, 240, 160, 104, 25)
-    b += fish(rng, 240, 380, 160, 104, 15)
-    b += fish(rng, 385, 385, 150, 100, -30)
+    b = base() + sauce(rng, 300, 300, 215, 210)
+    b += fish(rng, 225, 230, 170, 110, -20) + fish(rng, 370, 240, 160, 104, 25)
+    b += fish(rng, 240, 380, 160, 104, 15) + fish(rng, 385, 385, 150, 100, -30)
     return svg(600, 600, b)
 
 
-def dodo_plate():
+def peppered_beef():
+    rng = random.Random(79)
+    b = base() + sauce(rng, 300, 300, 200, 190)
+    for cx, cy, r in ((235, 235, 40), (320, 215, 38), (390, 270, 40), (230, 330, 38), (310, 305, 42), (385, 365, 36), (275, 400, 38)):
+        b += beef(rng, cx, cy, r)
+    b += [pepper_strip(280, 270, 50, 30, "#3f8a2f"), pepper_strip(350, 340, 46, -20, "#3f8a2f")]
+    b += onion(300, 350, 22, 15) + onion(245, 285, 18, -25)
+    return svg(600, 600, b)
+
+
+def assorted_meat():
+    rng = random.Random(83)
+    b = base() + sauce(rng, 300, 300, 210, 200)
+    b += shaki(rng, 230, 240, 48) + shaki(rng, 375, 360, 46) + shaki(rng, 240, 380, 40)
+    b += liver(rng, 340, 225, 42) + liver(rng, 410, 280, 36) + liver(rng, 300, 420, 36)
+    b += roundabout(rng, 300, 310, 24) + roundabout(rng, 190, 310, 20) + roundabout(rng, 420, 420, 20)
+    return svg(600, 600, b)
+
+
+def ponmo_plate():
+    rng = random.Random(89)
+    b = base() + sauce(rng, 300, 300, 210, 200)
+    for cx, cy, rot in ((230, 230, -20), (350, 215, 15), (215, 320, 40), (310, 300, -35), (400, 300, 60), (260, 400, 10), (370, 395, -15)):
+        b += ponmo(rng, cx, cy, 110, 40, rot)
+    return svg(600, 600, b)
+
+
+def plantain():
     rng = random.Random(5)
-    b = plate(300, 300, 280)
+    b = base()
     spots = [(300, 300, 0)] + [(300 + 120 * math.cos(a), 300 + 115 * math.sin(a), math.degrees(a) + 90) for a in [i * math.pi / 4 for i in range(8)]]
     spots += [(300 + 60 * math.cos(a), 300 + 58 * math.sin(a), math.degrees(a)) for a in [i * math.pi / 2 + 0.5 for i in range(4)]]
     for cx, cy, rot in spots:
@@ -268,69 +608,14 @@ def dodo_plate():
     return svg(600, 600, b)
 
 
-def amala_abula():
-    rng = random.Random(31)
-    b = plate(300, 300, 280)
-    b.append(f'<path d="{blob(rng, 380, 330, 160, 150, 12, 0.08)}" fill="#3f6e25"/>')
-    for _ in range(260):
-        x, y, _d = in_ellipse(rng, 380, 330, 150, 140)
-        b.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="{n(rng.uniform(1.5, 3.5))}" fill="{rng.choice(["#2b5417", "#5f9439", "#76a84a"])}"/>')
-    b.append(f'<path d="{blob(rng, 430, 400, 95, 80, 10, 0.12)}" fill="#dba140"/>')
-    for _ in range(60):
-        x, y, _d = in_ellipse(rng, 430, 400, 85, 70)
-        b.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="{n(rng.uniform(1.5, 3))}" fill="#bf8a2a"/>')
-    b += sauce(rng, 350, 200, 90, 60)
-    b.append(shadow(205, 300, 125, 120, 0.4))
-    b.append(f'<path d="{blob(rng, 200, 290, 125, 118, 10, 0.05)}" fill="url(#amala)"/>')
-    b.append(f'<ellipse cx="170" cy="250" rx="45" ry="22" fill="#a8907c" opacity=".35"/>')
-    b += goat(rng, 330, 195, 34) + goat(rng, 395, 215, 30)
-    return svg(600, 600, b)
-
-
-def yam_egusi():
-    rng = random.Random(41)
-    b = plate(300, 300, 280)
-    b.append(f'<path d="{blob(rng, 360, 340, 170, 155, 12, 0.1)}" fill="#c99a3a"/>')
-    for _ in range(180):
-        x, y, _d = in_ellipse(rng, 360, 340, 160, 145)
-        b.append(f'<path d="{blob(rng, x, y, rng.uniform(5, 12), rng.uniform(4, 9), 6, 0.35, rng.random() * 3)}" fill="{rng.choice(["#e8c35e", "#d7aa45", "#f0d27c"])}"/>')
-    for _ in range(45):
-        x, y, _d = in_ellipse(rng, 360, 340, 150, 135)
-        b.append(f'<ellipse cx="{n(x)}" cy="{n(y)}" rx="{n(rng.uniform(8, 16))}" ry="{n(rng.uniform(4, 7))}" fill="{rng.choice(["#2f6b2f", "#3f8a3a", "#245a24"])}" transform="rotate({rng.randint(0, 179)} {n(x)} {n(y)})"/>')
-    for _ in range(14):
-        x, y, _d = in_ellipse(rng, 360, 340, 150, 135)
-        b.append(f'<ellipse cx="{n(x)}" cy="{n(y)}" rx="{n(rng.uniform(10, 20))}" ry="{n(rng.uniform(3, 6))}" fill="#e2541c" opacity=".45"/>')
-    b += goat(rng, 420, 300, 34) + goat(rng, 370, 420, 30) + goat(rng, 455, 400, 26)
-    b.append(shadow(210, 255, 120, 112, 0.35))
-    b.append(f'<path d="{blob(rng, 205, 245, 122, 115, 10, 0.05)}" fill="url(#yam)"/>')
-    b.append(f'<ellipse cx="175" cy="205" rx="48" ry="20" fill="#ffffff" opacity=".6"/>')
-    return svg(600, 600, b)
-
-
-def fried_rice():
-    rng = random.Random(53)
-    b = plate(300, 300, 280)
-    b += rice(rng, 260, 300, 175, FRIED, 650, (("#5a9a2e", 40, 5), ("#f07a24", 40, 5), ("#f3e3c4", 10, 5)))
-    b += drumstick(rng, 360, 250, 150, -35)
-    b += dodo(rng, 410, 420, 44, 28, 25) + dodo(rng, 350, 455, 44, 28, -10)
-    return svg(600, 600, b)
-
-
-def asun_rice():
-    rng = random.Random(61)
-    b = plate(300, 300, 280)
-    b += rice(rng, 300, 300, 200, FRIED, 800, (("#5a9a2e", 40, 5), ("#f07a24", 40, 5)))
-    for cx, cy, r in ((260, 250, 40), (330, 230, 36), (300, 310, 42), (370, 300, 34), (240, 340, 32), (340, 370, 36)):
-        b += goat(rng, cx, cy, r)
-    for cx, cy, rot in ((280, 280, 30), (350, 340, -20), (230, 300, 70)):
-        b.append(pepper_strip(cx, cy, 50, rot, rng.choice(["#e8331c", "#3f8a2f"])))
-    b += onion(320, 270, 20, 15) + onion(270, 360, 18, -25)
-    return svg(600, 600, b)
+def salad():
+    rng = random.Random(97)
+    return svg(600, 600, base() + slaw(rng, 300, 300, 205))
 
 
 def moi_moi():
     rng = random.Random(71)
-    b = plate(300, 300, 280)
+    b = base()
     leaf = "M90 360 C140 190 330 110 520 170 C470 330 280 430 90 360Z"
     b.append(f'<path d="{leaf}" fill="url(#leaf)"/>')
     b.append('<path d="M95 358 C230 300 380 220 515 172" fill="none" stroke="#9fd17e" stroke-width="4" opacity=".7"/>')
@@ -345,15 +630,6 @@ def moi_moi():
     for _ in range(30):
         x, y, _d = in_ellipse(rng, 300, 290, 130, 75)
         b.append(f'<circle cx="{n(x)}" cy="{n(y)}" r="{n(rng.uniform(1.5, 3))}" fill="#9b3d14" opacity=".6"/>')
-    return svg(600, 600, b)
-
-
-def puff_puff():
-    rng = random.Random(83)
-    b = plate(300, 300, 280)
-    balls = [(220, 210), (320, 190), (410, 240), (180, 310), (290, 290), (400, 340), (230, 400), (330, 400), (300, 220)]
-    for cx, cy in sorted(balls, key=lambda p: p[1]):
-        b += puff(rng, cx, cy, 68)
     return svg(600, 600, b)
 
 
@@ -443,10 +719,16 @@ def main():
     ART.mkdir(parents=True, exist_ok=True)
     PAT.mkdir(parents=True, exist_ok=True)
     dishes = {
-        "jollof-combo": jollof_combo, "peppered-turkey": peppered_turkey, "fish-stew": fish_stew,
-        "dodo": dodo_plate, "amala-abula": amala_abula, "yam-egusi": yam_egusi,
-        "fried-rice": fried_rice, "asun-rice": asun_rice, "moi-moi": moi_moi,
-        "puff-puff": puff_puff, "zobo": zobo, "pepper-pot": pepper_pot,
+        "jollof-enjoyment": jollof_enjoyment, "royal-basmati": royal_basmati,
+        "white-rice-special": white_rice_special, "ofada-special": ofada_special,
+        "basmati-fried-rice": basmati_fried_rice, "jollof-rice": jollof_rice, "ofada-rice": ofada_rice,
+        "stir-fry-spaghetti": stir_fry_spaghetti, "porridge": porridge, "chicken-chips": chicken_chips,
+        "fried-chicken": fried_chicken, "amala-feast": amala_feast, "semo-combo": semo_combo,
+        "eba": lambda: swallow("eba", "#a07a1e", 101), "fufu": lambda: swallow("fufu", "#8a8170", 103),
+        "semo": lambda: swallow("semo", "#8a6d3b", 107), "egusi": egusi, "efo-riro": efo_riro,
+        "turkey": fried_turkey, "bokoto": bokoto, "asun": asun, "croaker": croaker_fish,
+        "eja-kika": eja_kika, "beef": peppered_beef, "assorted-meat": assorted_meat, "ponmo": ponmo_plate,
+        "plantain": plantain, "salad": salad, "moi-moi": moi_moi, "zobo": zobo, "pepper-pot": pepper_pot,
     }
     for name, fn in dishes.items():
         (ART / f"{name}.svg").write_text(fn())
