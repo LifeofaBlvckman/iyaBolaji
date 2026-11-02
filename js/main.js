@@ -544,7 +544,8 @@
       } catch { /* leave the built-in copy */ }
     }
     // The page may have been opened at #rice etc. before the sections existed.
-    if (location.hash && $(location.hash)) $(location.hash).scrollIntoView();
+    const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) target.scrollIntoView();
   }
 
   /* Build your plate (home) --------------------------------------------- */
@@ -555,9 +556,16 @@
     const tabsEl = $("#builder-tabs");
     const plateEl = $("#builder-plate");
     const max = D.builderMax || 8;
-    const groups = (D.builder || [])
-      .map((g) => ({ label: g.label, items: g.ids.map((id) => byId[id]).filter(Boolean) }))
-      .filter((g) => g.items.length);
+    const groups = (D.builder || []).map((g) => ({ label: g.label, items: g.ids.map((id) => byId[id]).filter(Boolean) }));
+    // Dishes added later in the dashboard join a group by their category (combos are full plates already).
+    const listed = new Set(groups.flatMap((g) => g.items.map((d) => d.id)));
+    const groupFor = (d) => d.cat === "protein" ? "Protein" : d.cat === "sides" ? "Sides" : /soup/i.test(d.badge) ? "Soup" : "Base";
+    for (const d of dishes) {
+      if (listed.has(d.id) || /combo/i.test(d.badge)) continue;
+      const g = groups.find((x) => x.label === groupFor(d));
+      if (g) g.items.push(d);
+    }
+    for (let i = groups.length - 1; i >= 0; i--) if (!groups[i].items.length) groups.splice(i, 1);
     if (!groups.length) return;
     // Where scoops land on the plate, as % of the plate (centre first).
     const slots = [[50, 50], [31, 37], [68, 35], [34, 67], [66, 66], [50, 25], [25, 53], [75, 52]];
@@ -935,6 +943,111 @@
         btn.disabled = false;
       }
     });
+  }
+
+  /* Lottie animations -------------------------------------------------- */
+  // The player (js/vendor, ~47 KB compressed) and each animation file load only
+  // when a [data-lottie] box is about to scroll into view. Animations pause
+  // off screen and stay still for visitors who prefer reduced motion.
+
+  let lottieLib;
+  const lottieFiles = {};
+
+  function loadLottieLib() {
+    lottieLib = lottieLib || new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "/js/vendor/lottie_light-5.13.0.min.js";
+      s.onload = () => (window.lottie ? resolve(window.lottie) : reject(new Error("Lottie player missing")));
+      s.onerror = () => reject(new Error("Couldn't load the Lottie player"));
+      document.head.append(s);
+    });
+    return lottieLib;
+  }
+
+  // .lottie files are zip archives: read the first animation (and any images)
+  // with the browser's own decompressor, so no extra library is needed.
+  async function readDotLottie(buf) {
+    const view = new DataView(buf);
+    const bytes = new Uint8Array(buf);
+    let eocd = -1;
+    for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65557); i--) {
+      if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error("Not a .lottie file");
+    const files = {};
+    let p = view.getUint32(eocd + 16, true);
+    for (let n = view.getUint16(eocd + 10, true); n > 0; n--) {
+      const nameLen = view.getUint16(p + 28, true);
+      const name = new TextDecoder().decode(bytes.subarray(p + 46, p + 46 + nameLen));
+      const local = view.getUint32(p + 42, true);
+      const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
+      files[name] = { method: view.getUint16(p + 10, true), data: bytes.subarray(start, start + view.getUint32(p + 20, true)) };
+      p += 46 + nameLen + view.getUint16(p + 30, true) + view.getUint16(p + 32, true);
+    }
+    const unzip = async (f) => {
+      if (f.method === 0) return f.data;
+      if (f.method !== 8 || !("DecompressionStream" in window)) throw new Error("Can't unpack this .lottie file");
+      return new Uint8Array(await new Response(new Blob([f.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
+    };
+    const text = async (name) => new TextDecoder().decode(await unzip(files[name]));
+    let animName;
+    if (files["manifest.json"]) {
+      const id = (JSON.parse(await text("manifest.json")).animations || [])[0]?.id;
+      animName = [`animations/${id}.json`, `a/${id}.json`].find((n) => files[n]);
+    }
+    animName = animName || Object.keys(files).find((n) => /^(animations|a)\/[^/]+\.json$/.test(n));
+    if (!animName) throw new Error("No animation inside this .lottie file");
+    const anim = JSON.parse(await text(animName));
+    for (const asset of anim.assets || []) {
+      const img = asset.p && !asset.e && [`images/${asset.p}`, `i/${asset.p}`].find((n) => files[n]);
+      if (!img) continue;
+      const raw = await unzip(files[img]);
+      let bin = "";
+      for (let i = 0; i < raw.length; i += 0x8000) bin += String.fromCharCode.apply(null, raw.subarray(i, i + 0x8000));
+      const type = /\.png$/i.test(asset.p) ? "png" : /\.webp$/i.test(asset.p) ? "webp" : /\.svg$/i.test(asset.p) ? "svg+xml" : "jpeg";
+      Object.assign(asset, { u: "", p: `data:image/${type};base64,${btoa(bin)}`, e: 1 });
+    }
+    return anim;
+  }
+
+  function loadLottieFile(url) {
+    lottieFiles[url] = lottieFiles[url] || fetch(url).then(async (res) => {
+      if (!res.ok) throw new Error(`Animation not found (${res.status})`);
+      return /\.json(\?|$)/i.test(url) ? res.json() : readDotLottie(await res.arrayBuffer());
+    });
+    return lottieFiles[url];
+  }
+
+  async function startLottie(box) {
+    try {
+      const url = D.animations[box.dataset.lottie];
+      const [lib, data] = await Promise.all([loadLottieLib(), loadLottieFile(url)]);
+      const anim = lib.loadAnimation({
+        container: box, renderer: "svg", loop: true, autoplay: false,
+        animationData: JSON.parse(JSON.stringify(data)), // each box needs its own copy
+        rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+      });
+      anim.addEventListener("DOMLoaded", () => {
+        box.classList.add("is-ready");
+        if (reduceMotion) { anim.goToAndStop(Math.round(anim.totalFrames / 2), true); return; }
+        new IntersectionObserver(([e]) => (e.isIntersecting ? anim.play() : anim.pause())).observe(box);
+      });
+    } catch (err) {
+      console.warn("Animation skipped:", err.message);
+      box.hidden = true;
+    }
+  }
+
+  const lottieBoxes = $$("[data-lottie]").filter((box) => D.animations && D.animations[box.dataset.lottie]);
+  if (lottieBoxes.length && "IntersectionObserver" in window) {
+    const near = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        near.unobserve(e.target);
+        startLottie(e.target);
+      }
+    }, { rootMargin: "400px 0px" });
+    for (const box of lottieBoxes) { box.hidden = false; near.observe(box); }
   }
 
   /* Links and numbers from data.js -------------------------------------- */

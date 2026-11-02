@@ -17,6 +17,12 @@ window.IYA = {
   // Optional form endpoint (Formspree, Mailchimp, etc.) for the email sign-up.
   signupEndpoint: "",
 
+  // Lottie animations from LottieFiles: Download & Handoff → CDN → Create asset
+  // link, then paste the .json or .lottie link here. Empty = not shown.
+  animations: {
+    cooking: "",
+  },
+
   // Extra buttons in the footer, next to Google Maps. Leave a link empty to hide it.
   links: { Chowdeck: "", Instagram: "", TikTok: "", Facebook: "" },
 

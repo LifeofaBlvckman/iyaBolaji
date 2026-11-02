@@ -165,7 +165,7 @@ code { padding: 1px 6px; border-radius: 6px; background: rgba(20, 18, 17, .08); 
 .dish-price.is-empty { font-family: var(--f-body); font-size: 13px; color: var(--red); font-weight: 700; }
 .dish-switches { display: flex; gap: 14px; }
 
-.switch { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.switch { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .switch span { position: relative; flex: none; width: 44px; height: 26px; border-radius: 13px; background: #cfc3b2; transition: background-color .2s ease; }
 .switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s ease; }
@@ -181,12 +181,13 @@ code { padding: 1px 6px; border-radius: 6px; background: rgba(20, 18, 17, .08); 
 .status-select { min-height: 40px; padding: 6px 12px; border: 2px solid var(--ink); border-radius: 999px; background: #fff; font: 700 14px var(--f-body); }
 
 /* Dish editor */
-.editor { width: min(760px, calc(100% - 24px)); max-height: calc(100vh - 24px); padding: 0; border: 0; border-radius: 26px; background: var(--paper); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .4); }
+/* Only the editor body scrolls; the dialog itself never does. */
+.editor { width: min(760px, calc(100% - 24px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); padding: 0; border: 0; border-radius: 26px; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .4); }
 .editor::backdrop { background: rgba(20, 18, 17, .6); }
-.editor form { display: flex; flex-direction: column; max-height: calc(100vh - 24px); }
+.editor form { display: flex; flex-direction: column; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }
 .editor-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 2px solid var(--line); }
 .editor-head h2 { font-family: var(--f-head); font-weight: 900; font-stretch: 125%; text-transform: uppercase; font-size: 22px; }
-.editor-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 22px; padding: 20px 22px; overflow-y: auto; }
+.editor-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 22px; min-height: 0; padding: 20px 22px; overflow-y: auto; overscroll-behavior: contain; }
 .photo-box { display: grid; gap: 10px; align-content: start; justify-items: center; text-align: center; }
 .photo-box img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; background: var(--cream); box-shadow: 0 0 0 6px var(--paper), 0 0 0 10px var(--red); }
 .photo-btn { cursor: pointer; }
@@ -228,7 +229,15 @@ code { padding: 1px 6px; border-radius: 6px; background: rgba(20, 18, 17, .08); 
   .tabs { order: 3; width: 100%; }
   .tab { flex: 1 1 auto; justify-content: center; padding: 8px 10px; }
   .live #live-text { display: none; }
-  .editor-body { grid-template-columns: 1fr; }
+  /* Full-screen sheet on phones, sized to the visible screen. */
+  .editor { width: 100%; max-width: 100%; height: 100vh; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
+  .editor form { height: 100%; max-height: none; }
+  .editor-body { flex: 1; grid-template-columns: 1fr; padding: 16px; }
+  .editor-head { gap: 12px; padding: 12px 16px; }
+  .editor-head h2 { font-size: 18px; line-height: 1.1; }
+  .editor-foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .editor-foot .btn { flex: 1 1 0; }
+  .photo-box img { width: 140px; height: 140px; }
   .editor-fields { grid-template-columns: 1fr; }
   .ratings { grid-template-columns: 1fr; }
   .stat { min-width: 0; flex: 1 1 0; padding: 8px 10px; }

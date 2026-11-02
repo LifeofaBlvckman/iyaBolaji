@@ -64,6 +64,8 @@ The dashboard uses the official Supabase browser library, saved in `js/vendor/` 
 
 Text and pictures animate in once as they scroll into view, and the home page has a short intro on load. It is all CSS (only movement and fades, nothing that makes phones redraw), started by small class changes in `js/main.js`; no animation library is loaded. Visitors whose phone is set to reduce motion get the page without animation.
 
+**Lottie animations**: put a LottieFiles link (`.json` or `.lottie`, from *Download & Handoff → CDN → Create asset link*) in `animations` in `js/data.js`. It plays in the "We're hiring cooks" band, beside the application form on `/careers`, and on the order confirmation. Any element with `data-lottie="cooking"` becomes another spot. The player (`js/vendor/lottie_light`, MIT licence) and the file load only when a spot is about to scroll into view, pause off screen, and stay still for visitors who prefer reduced motion. With no link, the spots stay hidden.
+
 Mark an element with `data-reveal` (or `data-reveal="left"`, `"right"`, `"pop"`) to fade it in, `data-split` on a heading to bring it in word by word, and `style="--d: .2s"` to delay it.
 
 ## Common edits

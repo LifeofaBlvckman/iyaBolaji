@@ -24,6 +24,9 @@
   let sb = null;
   let channel = null;
   let pollTimer = null;
+  let tickTimer = null;
+  let ordersLoading = null;
+  let ordersQueued = false;
   let orders = [];
   let dishes = [];
   let applications = [];
@@ -150,7 +153,18 @@
 
   /* Orders ------------------------------------------------------------------ */
 
-  async function loadOrders() {
+  // One load at a time: a burst of live events becomes one follow-up load, so
+  // each new order chimes exactly once.
+  function loadOrders() {
+    if (ordersLoading) { ordersQueued = true; return ordersLoading; }
+    ordersLoading = fetchOrders().finally(() => {
+      ordersLoading = null;
+      if (ordersQueued) { ordersQueued = false; loadOrders(); }
+    });
+    return ordersLoading;
+  }
+
+  async function fetchOrders() {
     const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false }).limit(300);
     if (error) { toast(friendly(error), true); return; }
     const fresh = [];
@@ -252,13 +266,14 @@
     // Polling as a safety net in case the live connection drops.
     pollTimer = setInterval(() => { if (!document.hidden) loadOrders(); }, 30000);
     // Keep the "x min ago" labels fresh.
-    setInterval(() => renderOrders(), 60000);
+    tickTimer = setInterval(() => renderOrders(), 60000);
   }
 
   function stopLive() {
     if (channel) sb.removeChannel(channel);
     channel = null;
     clearInterval(pollTimer);
+    clearInterval(tickTimer);
   }
 
   document.addEventListener("visibilitychange", () => { if (!document.hidden && sb && knownOrderIds) loadOrders(); });
