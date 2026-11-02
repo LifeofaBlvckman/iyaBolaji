@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#d9151d">
+  <title>Page not found · IyaBolaji Restaurant</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,900&family=Bagel+Fat+One&family=DM+Sans:wght@500;700&family=Modak&display=swap" rel="stylesheet">
+  <!-- Absolute paths: this page is shown for any missing address, at any depth. -->
+  <style>
+    :root { --red: #d9151d; --cream: #fdf0dc; --ink: #141211; --paper: #fffaf2; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 40px 16px;
+      background: var(--red) url("/assets/patterns/on-red.svg") 0 0 / 260px; color: var(--cream);
+      font: 500 18px/1.5 "DM Sans", system-ui, sans-serif; text-align: center;
+    }
+    main { display: grid; justify-items: center; gap: 22px; max-width: 640px; }
+    .brand { display: inline-flex; flex-direction: column; align-items: center; color: var(--cream); text-decoration: none; }
+    .brand span { font-family: "Modak", system-ui, sans-serif; font-size: clamp(72px, 18vw, 140px); line-height: .76; }
+    .brand svg { width: 46%; height: auto; aspect-ratio: 404 / 88; margin-top: 8px; color: var(--ink); }
+    .plate {
+      display: grid; place-items: center; width: 150px; height: 150px; margin: 22px 0 8px; border-radius: 50%;
+      background: radial-gradient(circle, #fffdf8 0 55%, #f1e6d4 70%);
+      box-shadow: 0 0 0 8px var(--paper), 0 0 0 16px var(--red), 0 0 0 22px var(--paper), 0 24px 40px rgba(60, 0, 0, .35);
+      color: var(--red); font-family: "Bagel Fat One", system-ui, sans-serif; font-size: 44px;
+    }
+    h1 { margin: 10px 0 0; font-family: "Archivo", "Arial Black", sans-serif; font-weight: 900; font-stretch: 125%; text-transform: uppercase; font-size: clamp(32px, 7vw, 54px); line-height: .92; }
+    p { margin: 0; max-width: 34ch; }
+    .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    a.btn { display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border: 2.5px solid var(--cream); border-radius: 999px; color: var(--cream); font-weight: 700; text-decoration: none; }
+    a.btn.solid { background: var(--cream); color: var(--ink); }
+    a:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="brand" href="/" aria-label="IyaBolaji Food, home">
+      <span aria-hidden="true">iyabolaji</span>
+      <svg viewBox="0 0 404 88" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"><path d="M18 76V34Q18 12 40 12H70M18 44H58"/><rect x="92" y="12" width="104" height="64" rx="32"/><rect x="216" y="12" width="104" height="64" rx="32"/><path d="M342 12V76H354Q386 76 386 44Q386 12 354 12Z"/></g></svg>
+    </a>
+    <div class="plate" aria-hidden="true">404</div>
+    <h1>This plate is empty</h1>
+    <p>We couldn't find that page. The pots are still hot, though.</p>
+    <div class="row">
+      <a class="btn solid" href="/menu">See the menu</a>
+      <a class="btn" href="/">Go home</a>
+    </div>
+  </main>
+</body>
+</html>

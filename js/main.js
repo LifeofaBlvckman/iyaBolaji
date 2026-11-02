@@ -45,6 +45,7 @@
       return data;
     } catch (err) {
       if (err.name === "AbortError") throw new Error("The connection timed out. Please try again.");
+      if (err instanceof TypeError) throw new Error("We couldn't connect. Check your internet and try again, or call us.");
       throw err;
     } finally {
       clearTimeout(timer);
@@ -248,7 +249,7 @@
       checkout.textContent = "Call to order";
       note.textContent = "Read us your bag and we'll have it ready.";
     } else {
-      checkout.href = "visit.html";
+      checkout.href = "/visit";
       checkout.textContent = "Visit us to order";
       note.textContent = "3rd Ave Rd, Ipaja. Dine-in, takeaway or delivery.";
     }
@@ -526,6 +527,21 @@
         }
       }, { rootMargin: "-40% 0px -55% 0px" });
       $$(".menu-cat", menuPage).forEach((s) => spy.observe(s));
+    }
+    // Keep the menu's structured data (read by Google) in step with the live prices.
+    const ld = $("#menu-ld");
+    if (ld) {
+      try {
+        const data = JSON.parse(ld.textContent);
+        data.hasMenuSection = cats.map((c) => ({
+          "@type": "MenuSection", name: c.label, description: c.blurb || "",
+          hasMenuItem: dishes.filter((d) => d.cat === c.id).map((d) => ({
+            "@type": "MenuItem", name: d.name, description: d.desc, image: new URL(d.img, location.origin + "/").href,
+            offers: { "@type": "Offer", price: String(d.price), priceCurrency: "NGN", availability: `https://schema.org/${d.available === false ? "OutOfStock" : "InStock"}` },
+          })),
+        }));
+        ld.textContent = JSON.stringify(data);
+      } catch { /* leave the built-in copy */ }
     }
     // The page may have been opened at #rice etc. before the sections existed.
     if (location.hash && $(location.hash)) $(location.hash).scrollIntoView();

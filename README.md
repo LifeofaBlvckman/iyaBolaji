@@ -6,7 +6,7 @@ The five public pages share the same header, footer and bag markup, so a change 
 
 ## Preview it
 
-Serve the folder (opening the files directly also works, but the map and page transitions need a server):
+Serve the folder (opening the files directly also works, but the map and page transitions need a server). Locally the pages are at `/menu.html` etc.; on Vercel `vercel.json` gives them clean addresses like `/menu`:
 
 ```bash
 python3 -m http.server 8000
@@ -18,15 +18,17 @@ Then visit http://localhost:8000.
 
 | Path | What it is |
 |------|------------|
-| `index.html` | Home page: hero, craving picker, menu carousel, "why it tastes like home", weekly drop |
-| `menu.html` | Full menu by category, built from `js/data.js` |
-| `about.html` | Our story |
-| `visit.html` | Find us: address, hours, how to order, map, allergens |
-| `careers.html` | We're hiring: open roles and the cook application form |
-| `admin.html` | Kitchen admin dashboard: orders, menu and photos, job applications (needs Supabase) |
+| `index.html` | Home page (`/`): hero, craving picker, menu carousel, "why it tastes like home", weekly drop |
+| `menu.html` | `/menu`: full menu by category, built from `js/data.js` |
+| `about.html` | `/about`: our story |
+| `visit.html` | `/visit`: address, hours, how to order, map, FAQ, allergens |
+| `careers.html` | `/careers`: we're hiring, open roles and the cook application form |
+| `admin.html` | `/admin`: kitchen dashboard, orders, menu and photos, job applications (needs Supabase) |
 | `js/config.js` | Supabase Project URL and anon key, shared by the site and the dashboard |
 | `js/admin.js`, `css/admin.css` | The dashboard |
 | `supabase/setup.sql` | Creates the database tables, security rules and photo storage |
+| `vercel.json` | Clean addresses (`/menu`, not `/menu.html`) and a few response headers |
+| `sitemap.xml`, `robots.txt`, `404.html` | For search engines, plus the "page not found" page |
 | `css/styles.css` | All styling. Colours and fonts are tokens at the top (`--red`, `--cream`, `--ink`, ...) |
 | `js/data.js` | Starting menu (used until Supabase is connected), cravings, plate-builder groups, WhatsApp/phone numbers |
 | `js/main.js` | Behaviour: animations, craving picker, menu, bag, drop countdown, scratch card, sizzle sound |
@@ -36,7 +38,7 @@ Then visit http://localhost:8000.
 
 ## Supabase: orders, menu editing and job applications
 
-Until Supabase is connected the site works on its own: the menu comes from `js/data.js` and the bag sends people to visit, call or WhatsApp. Once connected, the menu comes from the database, the bag has a real checkout, cook applications are saved, and the owner manages it all at `/admin.html`.
+Until Supabase is connected the site works on its own: the menu comes from `js/data.js` and the bag sends people to visit, call or WhatsApp. Once connected, the menu comes from the database, the bag has a real checkout, cook applications are saved, and the owner manages it all at `/admin`.
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In the project open **SQL Editor → New query**, paste the whole of `supabase/setup.sql` and click **Run**. This creates the tables, the security rules, the `dish-photos` storage bucket, live order updates, and loads the current menu. Running it again is safe.
@@ -50,7 +52,7 @@ Until Supabase is connected the site works on its own: the menu comes from `js/d
 
 4. Turn off public sign-ups: **Authentication → Sign In / Providers → Allow new users to sign up** off. Admin accounts are only ever added by you.
 5. Copy the **Project URL** and the **anon / publishable key** from **Project Settings → API** into `js/config.js`, then push. Never put the `service_role` / secret key in the site.
-6. Open `https://iyabolaji.vercel.app/admin.html` and sign in.
+6. Open `https://iyabolaji.vercel.app/admin` and sign in.
 
 What the public key can do is limited by the database itself: anyone can read the visible menu, place an order, and send an application. Only signed-in admins can see orders and applications, change the menu or upload photos. Order totals are worked out in the database from its own prices, so nobody can change a price in their browser.
 
@@ -94,6 +96,18 @@ node tools/export_logos.js
 
 The logo export needs Playwright and an internet connection (it loads the Modak font from Google Fonts).
 
+## Search engines (SEO)
+
+Every public page has its own title and description, a canonical address, and structured data that Google reads: the restaurant (address, map position, cuisine, price range, menu link), the full menu with prices (kept in step with the dashboard when the page loads), breadcrumbs, an FAQ on `/visit`, and job postings on `/careers`. `sitemap.xml` lists the pages; `robots.txt` keeps `/admin` out of search.
+
+To get indexed:
+
+1. Open [Google Search Console](https://search.google.com/search-console), add a **URL prefix** property for `https://iyabolaji.vercel.app/`, and verify it with the **HTML tag** method: paste the `<meta name="google-site-verification" ...>` tag into the `<head>` of `index.html`.
+2. In Search Console, go to **Sitemaps** and submit `sitemap.xml`.
+3. Claim the restaurant on [Google Business Profile](https://business.google.com) and add the website link. For searches like "restaurant near me" or "amala in Ipaja", the Business Profile matters more than anything on the site.
+
+When pages change a lot, update the `<lastmod>` dates in `sitemap.xml`. The FAQ on `/visit` quotes a few prices; update it if those change.
+
 ## Link previews
 
 Each page has its own preview image (`assets/og/*.jpg`, 1200x630) plus title and description tags, so shared links show a card on WhatsApp, iMessage, Facebook and X. Rebuild the images after changing prices or photos:
@@ -102,11 +116,11 @@ Each page has its own preview image (`assets/og/*.jpg`, 1200x630) plus title and
 node tools/export_og.js
 ```
 
-The tags use the full address `https://iyabolaji.vercel.app`. If the site moves to its own domain, replace that address in the `<head>` of all four pages.
+The tags use the full address `https://iyabolaji.vercel.app`. If the site moves to its own domain, replace that address everywhere it appears: the `<head>` of every page, `sitemap.xml` and `robots.txt`.
 
 ## Publishing
 
-Any static host works. On GitHub: Settings → Pages → deploy from this branch, folder `/ (root)`.
+Deployed on Vercel from the `main` branch (Framework preset: Other, no build command). `vercel.json` is picked up automatically.
 
 ## Credits
 
