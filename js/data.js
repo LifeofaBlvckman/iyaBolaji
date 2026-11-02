@@ -31,6 +31,15 @@ window.IYA = {
     { id: "sides", label: "Sides", blurb: "Plantain, moimoi and salad to finish the plate." },
   ],
 
+  // "Build your plate" on the home page: which single dishes appear in each group.
+  builder: [
+    { label: "Base", ids: ["jollof-rice", "ofada-rice", "basmati-fried-rice", "stir-fry-spaghetti", "porridge", "eba", "fufu", "semo"] },
+    { label: "Soup", ids: ["egusi", "efo-riro"] },
+    { label: "Protein", ids: ["turkey", "beef", "assorted-meat", "ponmo", "eja-kika", "croaker", "bokoto", "asun"] },
+    { label: "Sides", ids: ["plantain", "moi-moi", "salad"] },
+  ],
+  builderMax: 8,
+
   cravings: [
     { label: "Starving", dish: "jollof-enjoyment" },
     { label: "Spicy", dish: "bokoto" },

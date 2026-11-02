@@ -30,6 +30,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800;125,900&family=Bagel+Fat+One&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Modak&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/config.js" defer></script>
   <script src="js/data.js" defer></script>
   <script src="js/main.js" defer></script>
 </head>
@@ -56,6 +57,7 @@
     <symbol id="i-chili" viewBox="0 0 24 24"><path fill="currentColor" d="M3.6 18.4c7.3 2.4 14.4-2.3 15.6-10.4.1-.9-1-1.3-1.5-.6-2.7 3.7-7.5 6.4-12.6 7.6-1.9.4-3.2 2.8-1.5 3.4Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18.6 7.4c.2-1.7 1.2-2.9 2.8-3.5"/></symbol>
     <symbol id="i-napkin" viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h18v11.5L14.5 21H3V3Z"/><path fill="currentColor" opacity=".45" d="M14.5 21v-6.5H21Z"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5 10 17.5 19 7"/></symbol>
     <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11.5a7 7 0 1 0-14 0C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.6"/></g></symbol>
   </svg>
 
@@ -79,6 +81,7 @@
         <li><a href="menu.html">Menu</a></li>
         <li><a href="about.html">Our story</a></li>
         <li><a href="visit.html" aria-current="page">Find us</a></li>
+        <li><a href="careers.html">Hiring</a></li>
         <li><a href="./#drop">Drops</a></li>
       </ul>
       <div class="nav-actions">
@@ -211,7 +214,7 @@
           <h3>Eat</h3>
           <ul>
             <li><a href="menu.html">Menu</a></li>
-            <li><a href="./#cravings">Build a plate</a></li>
+            <li><a href="./#build">Build a plate</a></li>
             <li><a href="./#drop">Drops</a></li>
             <li><a href="#signup">Rewards</a></li>
           </ul>
@@ -229,6 +232,7 @@
           <h3>More</h3>
           <ul>
             <li><a href="about.html">Our story</a></li>
+            <li><a href="careers.html">We're hiring cooks</a></li>
             <li><a href="visit.html">Dine-in, takeaway, delivery</a></li>
             <li><a href="visit.html#allergens">Allergens: ask at the counter</a></li>
             <li><a href="#bag-open" data-open-bag>Your bag</a></li>
@@ -242,6 +246,7 @@
     </div>
     <div class="container footer-base">
       <p>© <span id="year">2026</span> IyaBolaji Restaurant, Ipaja, Lagos. Prices can change, so check at the counter.</p>
+      <p class="credit">Made by blvckman with <svg class="heart" viewBox="0 0 24 24" role="img" aria-label="love"><path fill="currentColor" d="M12 21.2s-7.6-4.6-9.7-9.4C.8 8.3 3 4.4 6.7 4.4c2.2 0 3.7 1.2 4.6 2.7.9-1.5 2.4-2.7 4.6-2.7 3.7 0 5.9 3.9 4.4 7.4-2.1 4.8-8.3 9.4-8.3 9.4Z"/></svg></p>
       <ul class="footer-pills" id="footer-pills" aria-label="Find IyaBolaji online">
         <li><a class="pill" href="https://www.google.com/maps/search/?api=1&amp;query=IyaBolaji%20Restaurant%2C%203rd%20Ave%20Rd%2C%20Ipaja%2C%20Lagos" target="_blank" rel="noopener">Google Maps</a></li>
       </ul>
@@ -253,11 +258,52 @@
       <h2 id="bag-title">Your bag</h2>
       <button class="icon-btn icon-btn-ink" type="button" id="bag-close" aria-label="Close bag"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
     </div>
-    <ul class="bag-list" id="bag-list"></ul>
-    <div class="bag-foot">
-      <p class="bag-total"><span>Total</span><strong id="bag-total">₦0</strong></p>
-      <a class="btn btn-red btn-lg bag-checkout" id="bag-checkout" href="visit.html">Visit or call to order</a>
-      <p class="bag-note" id="bag-note">Pick up, dine in, or ask about delivery.</p>
+
+    <div class="bag-view" id="bag-view">
+      <ul class="bag-list" id="bag-list"></ul>
+      <div class="bag-foot">
+        <p class="bag-total"><span>Total</span><strong id="bag-total">₦0</strong></p>
+        <a class="btn btn-red btn-lg bag-checkout" id="bag-checkout" href="visit.html">Visit or call to order</a>
+        <p class="bag-note" id="bag-note">Pick up, dine in, or ask about delivery.</p>
+      </div>
+    </div>
+
+    <form class="bag-view checkout" id="checkout" novalidate hidden>
+      <div class="checkout-body">
+        <button class="link-btn" type="button" id="checkout-back"><svg aria-hidden="true"><use href="#i-left"/></svg> Back to bag</button>
+        <fieldset class="seg">
+          <legend>How do you want it?</legend>
+          <label><input type="radio" name="type" value="pickup" checked><span>Pickup</span></label>
+          <label><input type="radio" name="type" value="delivery"><span>Delivery</span></label>
+          <label><input type="radio" name="type" value="dine-in"><span>Dine-in</span></label>
+        </fieldset>
+        <label class="field">Your name
+          <input name="name" autocomplete="name" maxlength="80" required>
+        </label>
+        <label class="field">Phone number
+          <input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="0801 234 5678" required>
+        </label>
+        <label class="field" id="address-field" hidden>Delivery address
+          <textarea name="address" rows="2" maxlength="300" autocomplete="street-address"></textarea>
+        </label>
+        <label class="field">Note for the kitchen <span class="hint">Optional</span>
+          <textarea name="note" rows="2" maxlength="500" placeholder="Extra pepper, no onions..."></textarea>
+        </label>
+        <p class="form-error" id="checkout-msg" role="alert"></p>
+      </div>
+      <div class="bag-foot">
+        <p class="bag-total"><span>Total</span><strong id="checkout-total">₦0</strong></p>
+        <button class="btn btn-red btn-lg bag-checkout" type="submit" id="place-order">Place order</button>
+        <p class="bag-note">We'll call you to confirm your order and payment.</p>
+      </div>
+    </form>
+
+    <div class="bag-view order-done" id="order-done" hidden>
+      <div class="done-badge" aria-hidden="true"><svg><use href="#i-check"/></svg></div>
+      <h3 id="done-title">Order in!</h3>
+      <p id="done-text"></p>
+      <ul class="done-items" id="done-items"></ul>
+      <button class="btn btn-red btn-lg" type="button" id="done-close">Done</button>
     </div>
   </dialog>
 

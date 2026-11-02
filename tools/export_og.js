@@ -9,6 +9,7 @@ const pages = [
   { slug: "home", line1: "Smoky jollof.", line2: "Mama's touch.", img: "../assets/img/turkey.jpg", art: false, top: "Fried turkey", big: "₦7,000" },
   { slug: "menu", line1: "See the", line2: "full menu.", img: "../assets/art/jollof-enjoyment.webp", art: true, top: "Jollof from", big: "₦800" },
   { slug: "about", line1: "Our story.", line2: "Mama's pot.", img: "../assets/img/fish-pepper-stew.jpg", art: false, top: "Belle", big: "full" },
+  { slug: "careers", line1: "We're hiring", line2: "cooks.", img: "../assets/img/fish-pepper-stew.jpg", art: false, top: "Now", big: "hiring" },
   { slug: "visit", line1: "Find us in", line2: "Ipaja, Lagos.", img: "../assets/img/turkey.jpg", art: false, top: "Open till", big: "11:59PM" },
 ];
 
