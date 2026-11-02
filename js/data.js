@@ -20,7 +20,7 @@ window.IYA = {
   // Lottie animations from LottieFiles: Download & Handoff → CDN → Create asset
   // link, then paste the .json or .lottie link here. Empty = not shown.
   animations: {
-    cooking: "",
+    cooking: "https://lottie.host/917c2d6c-65f5-444e-88b9-1241a3759c55/ikSdri5XbD.lottie",
   },
 
   // Extra buttons in the footer, next to Google Maps. Leave a link empty to hide it.

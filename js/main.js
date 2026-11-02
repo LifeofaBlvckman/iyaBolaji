@@ -1020,7 +1020,8 @@
 
   async function startLottie(box) {
     try {
-      const url = D.animations[box.dataset.lottie];
+      // Share/embed links (lottie.host/embed/...) open a player page; the file itself is without /embed.
+      const url = D.animations[box.dataset.lottie].replace("//lottie.host/embed/", "//lottie.host/");
       const [lib, data] = await Promise.all([loadLottieLib(), loadLottieFile(url)]);
       const anim = lib.loadAnimation({
         container: box, renderer: "svg", loop: true, autoplay: false,
