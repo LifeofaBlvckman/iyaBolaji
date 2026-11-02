@@ -9,6 +9,6 @@
  * js/data.js and the bag falls back to visit / call / WhatsApp.
  */
 window.IYA_CONFIG = {
-  supabaseUrl: "",
-  supabaseKey: "",
+  supabaseUrl: "https://qmnqhudahvaxmqigrepg.supabase.co",
+  supabaseKey: "sb_publishable_tqwbiYJuN78QD4t6N8oLMQ_23uc5_gc",
 };
