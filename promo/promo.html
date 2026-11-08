@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- IyaBolaji one-take promo in the style of the reference. render(t) is a pure function of time. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Modak&family=Noto+Color+Emoji&display=block" rel="stylesheet">
+<style>
+  :root { --bg: #e7e5e1; --red: #d9151d; --ink: #141211; --card: #fafaf9; --grey: #8b8680; }
+  html, body { margin: 0; background: var(--bg); }
+  #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: var(--bg); font-family: "Inter", "Noto Color Emoji", sans-serif; }
+  #box { position: absolute; }
+  .layer { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .el { position: absolute; left: 0; top: 0; white-space: nowrap; transform-origin: 50% 50%; }
+  .txt span { display: inline-block; transform-origin: 50% 85%; }
+  .emoji { font-family: "Noto Color Emoji"; }
+  .h { font-weight: 800; letter-spacing: -.02em; line-height: 1.08; }
+  .modak { font-family: "Modak"; line-height: .8; }
+  .lbl { font-weight: 600; font-size: 26px; color: var(--grey); }
+  .item { width: 540px; font-weight: 600; font-size: 38px; color: #6f6a64; padding: 0 28px; box-sizing: border-box; }
+  .photo { border-radius: 20px; object-fit: cover; display: block; background: #efe9df; }
+  .price { font-weight: 800; font-size: 40px; color: var(--red); }
+  .btn { background: var(--red); color: #fff; font-weight: 800; border-radius: 999px; display: grid; place-items: center; }
+  .row { display: flex; align-items: center; gap: 22px; width: 600px; font-weight: 700; font-size: 34px; color: var(--ink); }
+  .row img { width: 84px; height: 84px; border-radius: 14px; object-fit: cover; }
+  .row .p { margin-left: auto; font-weight: 800; }
+  #hand { position: absolute; left: 0; top: 0; width: 70px; height: 70px; z-index: 10; }
+  #fade { position: absolute; inset: 0; background: var(--bg); opacity: 0; z-index: 20; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="box"></div>
+  <!-- Small hand cursor, turned sideways; its fingertip is the hotspot at (8, 6) of the 70px box. -->
+  <svg id="hand" viewBox="0 0 64 64"><g transform="rotate(-62 8 6)">
+    <path d="M14.5 6.5c0-2.6 4.8-2.6 4.8 0v17.2c0-2.7 4.6-2.7 4.6 0v2.3c0-2.6 4.6-2.6 4.6 0v2.6c0-2.5 4.4-2.5 4.4.1v11.5c0 7-4.6 12.4-12.1 12.4h-2.9c-4.7 0-7.6-2.4-10-6.6L1.6 37.4c-1.4-2.4 1.9-4.6 3.7-2.6l4.4 5V6.5z" transform="translate(-6 -1)"
+      fill="#fff" stroke="#141211" stroke-width="2.4" stroke-linejoin="round"/></g></svg>
+  <div id="fade"></div>
+</div>
+<svg width="0" height="0" style="position:absolute"><symbol id="food" viewBox="0 0 404 88"><g fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"><path pathLength="100" d="M18 76V34Q18 12 40 12H70M18 44H58"/><rect pathLength="100" x="92" y="12" width="104" height="64" rx="32"/><rect pathLength="100" x="216" y="12" width="104" height="64" rx="32"/><path pathLength="100" d="M342 12V76H354Q386 76 386 44Q386 12 354 12Z"/></g></symbol></svg>
+<script>
+const B = 60 / 146;                         // one beat of Body (146 BPM); video starts 2 beats before the drop
+const A = "../assets/";
+// Real photos go in assets/img; until the spaghetti photo arrives, its drawing stands in.
+const SPAG = A + "art/stir-fry-spaghetti.webp", SPAG_ART = true;
+const BG = [231, 229, 225], CARD = [250, 250, 249], RED = [222, 40, 36], INK = [20, 18, 17], MAP = [222, 218, 213], KRAFT = [199, 158, 104];
+const SETTLE = 0.42, MORPH = 0.75;
+
+// Reaches 1 exactly on the landing beat, then one small overshoot and settle.
+function land(k, start, end, over = 0.06, settle = SETTLE) {
+  if (k <= start) return 0;
+  if (k < end) { const u = (k - start) / (end - start); return u * u * (2.2 - 1.2 * u); }
+  const s = (k - end) / settle;
+  return s < 1 ? 1 + over * Math.sin(Math.PI * s) * (1 - s) * 1.6 : 1;
+}
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const mix = (a, b, p) => a + (b - a) * p;
+const ease = (u) => (u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+const outQuint = (u) => 1 - Math.pow(1 - u, 5);
+const sine = (u) => -(Math.cos(Math.PI * u) - 1) / 2;
+const hash = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const rgb = (c, a = 1) => `rgba(${c.map(Math.round).join(",")},${a})`;
+
+const DISHES = [
+  { img: A + "art/jollof-enjoyment.webp", name: "Jollof Enjoyment", price: "₦6,000", heat: 3, art: true },
+  { img: A + "art/stir-fry-spaghetti.webp", name: "Stir Fry Spaghetti", price: "₦2,000", heat: 2, art: true },
+  { img: A + "art/asun.webp", name: "Asun Goat Meat", price: "₦3,500", heat: 5, art: true },
+  { img: A + "img/turkey.jpg", name: "Fried Turkey", price: "₦7,000", heat: 2 },
+];
+const chilies = (n) => "🌶️".repeat(n);
+const dishCard = (d, w) => `<div style="width:${w}px">
+  <img class="photo" src="${d.img}" style="width:${w}px;height:${Math.round(w * .82)}px;${d.art ? "object-fit:contain;background:#f4efe6" : ""}">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:20px">
+    <div><div class="h" style="font-size:42px;color:#141211">${d.name}</div><div class="price" style="margin-top:6px">${d.price}</div></div>
+    <div class="emoji" style="font-size:30px">${chilies(d.heat)}</div></div></div>`;
+
+/* Storyboard: one container, a state per step; every landing is on a beat. ----- */
+const S = [
+  { k: 1, x: 540, y: 520, w: 64, h: 64, r: 32, bg: RED, sh: 1, els: [] },
+  { k: 2, x: 540, y: 520, w: 580, h: 196, r: 46, bg: RED, sh: 1, ov: 1, els: [
+    { t: "html", html: '<span class="lbl">Me</span>', x: 250, y: -132, k: 2.5, from: "fade" },
+    { t: "text", s: "yo, what's for", color: [255, 255, 255], size: 54, x: -48, y: -32, k: 3, cls: "h" },
+    { t: "text", s: "dinner", color: [255, 255, 255], size: 54, x: -132, y: 32, k: 3.5, cls: "h" },
+    { t: "html", html: '<span class="emoji" style="font-size:66px">😋</span>', x: 210, y: 40, k: 4, from: "pop" },
+  ] },
+  { k: 5, x: 540, y: 520, w: 620, h: 240, r: 40, bg: CARD, sh: 1, ov: 1, els: [
+    { t: "html", html: '<span class="lbl">Friend</span>', x: -240, y: -152, k: 5.5, from: "fade" },
+    { t: "text", s: "get something", color: INK, size: 52, x: -78, y: -38, k: 6, cls: "h" },
+    { t: "text", s: "from IyaBolaji", color: INK, size: 52, x: -66, y: 30, k: 6.5, cls: "h", red: [5, 14] },
+    { t: "html", html: '<span class="emoji" style="font-size:72px">🍲</span>', x: 230, y: 50, k: 7, from: "pop" },
+  ] },
+  { k: 8, x: 540, y: 540, w: 640, h: 600, r: 30, bg: CARD, sh: 1, els: [
+    { t: "text", s: "Where are you?", color: INK, size: 56, x: -76, y: -220, k: 9, cls: "h" },
+    { t: "html", html: '<div id="selbar" style="width:580px;height:78px;border-radius:18px;background:#de2824"></div>', x: 0, y: 60, k: 10, from: "bar" },
+    ...["Ikeja", "Lekki", "Ipaja", "Yaba"].map((c, i) => ({ t: "html", html: `<div class="item"${c === "Ipaja" ? ' id="ipaja"' : ""}>${c}</div>`, x: -20, y: -100 + i * 80, k: 9.25 + i * 0.25, from: "type" })),
+  ] },
+  { k: 12, x: 540, y: 540, w: 820, h: 150, r: 75, bg: CARD, sh: 1, els: [
+    { t: "html", html: '<div class="btn" id="searchbtn" style="width:110px;height:110px"><svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></div>', x: 335, y: 0, k: 12.75, from: "pop" },
+    { t: "type", s: "IyaBolaji", x: -330, y: 0, k: 13, end: 14, size: 56 },
+  ] },
+  { k: 16, x: 540, y: 540, w: 600, h: 740, r: 30, bg: CARD, sh: 1, els: [
+    { t: "carousel", x: 0, y: 0, k: 17, swipeFrom: 17.5, swipeTo: 19, cardW: 540 },
+    { t: "html", html: '<span class="emoji" style="font-size:60px">🔥</span>', x: 225, y: -270, k: 19.5, from: "pop" },
+  ] },
+  { k: 21, x: 540, y: 540, w: 880, h: 740, r: 30, bg: CARD, sh: 1, els: [
+    { t: "html", html: dishCard(DISHES[3], 500), x: -170, y: 0, k: 21.5, from: "fade" },
+    { t: "html", html: `<div id="side" style="width:290px;padding:16px;border-radius:24px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.14)"><img class="photo" src="${SPAG}" style="width:290px;height:250px;${SPAG_ART ? "object-fit:contain;background:#f4efe6" : ""}"><div class="h" style="font-size:32px;margin-top:14px;color:#141211">Stir Fry Spaghetti</div><div class="price" style="font-size:32px">₦2,000</div></div>`, x: 268, y: 30, k: 22, from: "pop" },
+  ] },
+  { k: 24, x: 540, y: 540, w: 700, h: 640, r: 30, bg: CARD, sh: 1, els: [
+    { t: "text", s: "Your order", color: INK, size: 58, x: -150, y: -238, k: 25, cls: "h" },
+    { t: "html", html: `<div class="row"><img src="${A}img/turkey.jpg"><span>Fried Turkey</span><span class="p">₦7,000</span></div>`, x: 0, y: -120, k: 25.5, from: "type" },
+    { t: "html", html: `<div class="row"><img src="${SPAG}" style="${SPAG_ART ? "object-fit:contain;background:#f4efe6" : ""}"><span>Stir Fry Spaghetti</span><span class="p">₦2,000</span></div>`, x: 0, y: -10, k: 25.75, from: "type" },
+    { t: "html", html: '<div class="row" style="font-weight:600;color:#8b8680"><span>Prep time</span><span class="p" style="color:#141211">21–31 min</span></div>', x: 0, y: 90, k: 26, from: "type" },
+    { t: "html", html: '<div class="btn" id="placebtn" style="width:600px;height:96px;font-size:40px">Place order</div>', x: 0, y: 220, k: 26.5, from: "pop" },
+  ] },
+  { k: 30, x: 540, y: 540, w: 780, h: 230, r: 36, bg: INK, sh: 1, els: [
+    { t: "text", s: "On the way", color: [255, 255, 255], size: 68, x: -150, y: -42, k: 31, cls: "h" },
+    { t: "html", html: '<span style="font-weight:600;font-size:32px;color:#cfc9c2">Fresh from Mama\'s pot</span>', x: -191, y: 26, k: 31.5, from: "fade" },
+    { t: "html", html: '<div style="width:680px;height:10px;border-radius:5px;background:#3a3633;overflow:hidden"><div id="prog" style="width:0;height:100%;background:#de2824;border-radius:5px"></div></div>', x: 0, y: 82, k: 31.5, from: "fade" },
+  ] },
+  { k: 34, x: 540, y: 540, w: 660, h: 620, r: 30, bg: MAP, sh: 1, els: [
+    { t: "html", html: `<svg width="660" height="620" viewBox="0 0 660 620"><g stroke="#fff" stroke-width="30" fill="none"><path d="M180 0V620M470 0V620M0 160H660M0 430H660"/><path d="M-20 560L680 180"/></g>
+      <path id="route" pathLength="100" d="M70 560C190 470 260 380 330 350S480 300 560 200" fill="none" stroke="#de2824" stroke-width="12" stroke-linecap="round"/>
+      <g id="rider"><circle r="22" fill="#de2824" opacity=".25"/><circle r="12" fill="#de2824" stroke="#fff" stroke-width="5"/></g></svg>`, x: 0, y: 0, k: 34.5, from: "fade" },
+    { t: "html", html: '<div style="background:#141211;color:#fff;font-weight:700;font-size:30px;padding:12px 22px;border-radius:14px">Rider on the way</div>', x: -160, y: -250, k: 35, from: "pop" },
+  ] },
+  { k: 38, x: 540, y: 500, w: 380, h: 480, r: 8, bg: KRAFT, sh: 1, ov: 1, els: [
+    { t: "html", html: '<div style="width:380px;height:480px;border-radius:8px;background:linear-gradient(90deg,rgba(0,0,0,.12),rgba(255,255,255,.08) 30%,rgba(0,0,0,.06) 70%,rgba(0,0,0,.16)),linear-gradient(180deg,rgba(0,0,0,.18) 0 34px,transparent 34px)"></div>', x: 0, y: 0, k: 38.42, from: "fade" },
+    { t: "html", html: '<div style="text-align:center"><div class="modak" style="font-size:80px;color:#d9151d">iyabolaji</div><svg viewBox="0 0 404 88" width="150" style="display:block;margin:8px auto 0;color:#141211"><use href="#food"/></svg></div>', x: 0, y: 10, k: 39, from: "pop" },
+    ...[0, 1, 2, 3, 4].map((i) => ({ t: "html", html: `<svg viewBox="0 0 24 24" width="62" height="62" id="star${i}"><path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5 6 20.8l1.3-6.7-5-4.6 6.8-.8z" fill="#141211"/></svg>`, x: -140 + i * 70, y: 320, k: 40 + i * 0.25, from: "star" })),
+  ] },
+  { k: 42, x: 540, y: 540, w: 760, h: 760, r: 30, bg: CARD, sh: 1, els: [
+    { t: "html", html: `<img class="photo" src="${A}img/turkey.jpg" style="width:760px;height:760px;border-radius:0">`, x: 0, y: 0, k: 43, from: "pop" },
+    ...[[380, -60, 44], [380, 110, 44.5]].map(([x, y, k]) => ({ t: "html", html: '<div style="width:170px;height:170px;border-radius:50%;background:#e7e5e1"></div>', x, y, k, from: "bite" })),
+  ] },
+  { k: 46, x: 540, y: 540, w: 960, h: 320, r: 30, bg: BG, sh: 0, els: [
+    { t: "text", s: "The pepper is", color: INK, size: 84, x: 0, y: -50, k: 47, cls: "h", red: [4, 10] },
+    { t: "text", s: "in every bite", color: INK, size: 84, x: -46, y: 46, k: 47.5, cls: "h" },
+    { t: "html", html: '<span class="emoji" style="font-size:80px">😋</span>', x: 290, y: 52, k: 48, from: "pop" },
+  ] },
+  { k: 50, x: 540, y: 540, w: 900, h: 560, r: 30, bg: BG, sh: 0, els: [
+    { t: "text", s: "iyabolaji", color: [217, 21, 29], size: 200, x: 0, y: -50, k: 51, cls: "modak" },
+    { t: "draw", x: 0, y: 130, w: 340, k: 51.5, end: 52 },
+    { t: "html", html: '<span style="font-weight:700;font-size:34px;color:#8b8680">iyabolaji.vercel.app</span>', x: 0, y: 225, k: 52.5, from: "fade" },
+  ] },
+  { k: 54, x: 540, y: 540, w: 960, h: 200, r: 30, bg: BG, sh: 0, els: [
+    { t: "text", s: "Made by blvckman", color: INK, size: 84, x: 0, y: 0, k: 55, cls: "h", red: [8, 16], redColor: "#a855f7" },
+  ] },
+];
+for (let i = 0; i < S.length; i++) S[i].start = S[i].k - (i === 0 ? 0.75 : MORPH);
+
+/* Cursor: one continuous path. Slow drift beside each action, then a fast sweep past it. */
+const P = [
+  [5.5, 1150, 860, "d"], [6.5, 800, 668, "d"], [7.5, 786, 650, "d"],
+  [9.5, 810, 640, "d"], [10.0, 700, 602, "d"], [10.3, 990, 790, "s"],
+  [14.5, 935, 600, "d"], [15.0, 880, 548, "d"], [15.3, 1000, 880, "s"],
+  [17.25, 880, 520, "d"], [17.5, 800, 540, "d"], [18.0, 250, 565, "s"],
+  [22.5, 990, 660, "d"], [23.0, 820, 560, "d"], [23.3, 420, 960, "s"],
+  [27.5, 905, 805, "d"], [28.0, 770, 770, "d"], [28.3, 260, 1000, "s"],
+  [33.0, 925, 640, "d"], [37.0, 830, 430, "d"], [37.3, 300, 880, "s"],
+  [40.75, 760, 880, "d"], [41.0, 680, 840, "d"], [41.3, 990, 380, "s"],
+  [44.75, 950, 320, "d"], [45.1, 1190, 180, "s"],
+];
+const TAPS = [10, 15, 23, 28, 41];
+const DRAG = [17.5, 18.0];
+function cr(p0, p1, p2, p3, u) {
+  const u2 = u * u, u3 = u2 * u;
+  return .5 * ((2 * p1) + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u2 + (-p0 + 3 * p1 - 3 * p2 + p3) * u3);
+}
+function cursorAt(k) {
+  if (k <= P[0][0]) return { x: P[0][1], y: P[0][2] };
+  for (let i = 0; i < P.length - 1; i++) {
+    if (k > P[i + 1][0]) continue;
+    const u0 = (k - P[i][0]) / (P[i + 1][0] - P[i][0]);
+    const u = P[i + 1][3] === "s" ? ease(u0) : sine(u0);
+    const q = (j) => P[clamp(j, 0, P.length - 1)];
+    return { x: cr(q(i - 1)[1], q(i)[1], q(i + 1)[1], q(i + 2)[1], u), y: cr(q(i - 1)[2], q(i)[2], q(i + 1)[2], q(i + 2)[2], u) };
+  }
+  const l = P[P.length - 1]; return { x: l[1], y: l[2] };
+}
+
+/* Build the DOM ------------------------------------------------------------- */
+const box = document.getElementById("box");
+for (const s of S) {
+  s.layer = document.createElement("div");
+  s.layer.className = "layer";
+  box.append(s.layer);
+  for (const e of s.els) {
+    const el = document.createElement("div");
+    el.className = "el";
+    if (e.t === "text") {
+      el.className += " txt " + e.cls;
+      el.style.fontSize = e.size + "px";
+      e.spans = [...e.s].map((ch, i) => {
+        const sp = document.createElement("span");
+        sp.textContent = ch === " " ? " " : ch;
+        sp.style.color = e.red && i >= e.red[0] && i < e.red[1] ? (e.redColor || "#de2824") : rgb(e.color);
+        el.append(sp); return sp;
+      });
+    } else if (e.t === "type") {
+      el.innerHTML = `<span class="h" style="font-size:${e.size}px;color:#141211"></span><span id="caret" style="display:inline-block;width:4px;height:${e.size}px;background:#de2824;vertical-align:-8px;margin-left:4px"></span>`;
+      el.style.transform = `translate(${e.x}px, ${e.y}px) translateY(-50%)`;
+    } else if (e.t === "carousel") {
+      el.innerHTML = `<div style="width:${e.cardW}px;height:640px;overflow:hidden"><div class="strip" style="display:flex;gap:60px">${DISHES.map((d) => dishCard(d, e.cardW)).join("")}</div></div>`;
+    } else if (e.t === "draw") {
+      el.innerHTML = `<svg viewBox="0 0 404 88" width="${e.w}" style="display:block;color:#141211"><use href="#food"/></svg>`;
+    } else el.innerHTML = e.html;
+    s.layer.append(el);
+    e.node = el;
+  }
+}
+const hand = document.getElementById("hand"), fade = document.getElementById("fade");
+
+/* Render one moment --------------------------------------------------------- */
+window.render = function (t) {
+  const k = t / B;
+  let i = 0;
+  while (i < S.length - 1 && k >= S[i + 1].start) i++;
+  const prev = i === 0 ? { x: 540, y: 520, w: 0, h: 0, r: 0, bg: RED, sh: 1 } : S[i - 1], cur = S[i];
+  const p = land(k, cur.start, cur.k, i === 0 ? 0.1 : 0.06), pc = clamp(p);
+  const g = { x: mix(prev.x, cur.x, p), y: mix(prev.y, cur.y, p), w: Math.max(0, mix(prev.w, cur.w, p)), h: Math.max(0, mix(prev.h, cur.h, p)), r: Math.max(0, mix(prev.r, cur.r, p)) };
+  const sh = mix(prev.sh, cur.sh, pc);
+  Object.assign(box.style, {
+    left: g.x - g.w / 2 + "px", top: g.y - g.h / 2 + "px", width: g.w + "px", height: g.h + "px",
+    borderRadius: Math.min(g.r, g.w / 2, g.h / 2) + "px",
+    background: rgb(prev.bg.map((c, j) => mix(c, cur.bg[j], pc))),
+    boxShadow: `0 22px 50px rgba(0,0,0,${0.13 * sh}), 0 3px 8px rgba(0,0,0,${0.06 * sh})`,
+    overflow: cur.ov && k >= cur.k ? "visible" : "hidden",
+  });
+
+  S.forEach((s, si) => {
+    const next = S[si + 1];
+    const live = k >= s.k && (!next || k < next.start);
+    s.layer.style.display = live ? "block" : "none";
+    if (!live) return;
+    const out = next ? 1 - clamp((k - (next.start - 0.2)) / 0.2) : 1;
+    const open = s.k + SETTLE;                     // nothing appears until the card has opened
+    for (const e of s.els) {
+      const n = e.node;
+      if (e.t === "text") {
+        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%)`;
+        n.style.opacity = out;
+        e.spans.forEach((sp, li) => {
+          const lk = e.k + li * 0.045;               // each letter lands on its own; the first one on the beat
+          const st = Math.max(lk - 0.55, open);
+          const q = land(k, st, lk, 0.1 + 0.08 * hash(li + e.k), 0.36 + 0.12 * hash(li * 3 + 1));
+          const a = 1 - q;
+          const wave = Math.sin(li * 0.9 + k * 6) * 30 * clamp(a);
+          sp.style.opacity = clamp((k - st) / 0.12);
+          sp.style.transform = `translateY(${a * -60 + wave}px) rotate(${a * (hash(li + 7) * 24 - 12)}deg) scale(${1 + a * 0.6})`;
+        });
+      } else if (e.t === "type") {
+        const st = Math.max(e.k, open);
+        const n2 = Math.floor(clamp((k - st) / (e.end - st)) * e.s.length + 1e-6);
+        n.firstElementChild.textContent = e.s.slice(0, k >= st ? Math.max(1, n2) : 0);
+        n.querySelector("#caret").style.opacity = (k < e.end || Math.floor((k - e.end) * 2) % 2 === 0) && k >= st ? 1 : 0;
+        n.style.opacity = out;
+      } else if (e.t === "carousel") {
+        const st = Math.max(e.k - 0.5, open);
+        const q = land(k, st, e.k, 0.06);
+        // Swipe: dragged fast, then glides to land on the last dish exactly on the beat.
+        const sw = clamp((k - e.swipeFrom) / (e.swipeTo - e.swipeFrom));
+        let pos = (DISHES.length - 1) * outQuint(sw);
+        if (k > e.swipeTo) pos += 0.04 * Math.sin(Math.PI * clamp((k - e.swipeTo) / 0.4)) * (1 - clamp((k - e.swipeTo) / 0.4));
+        n.querySelector(".strip").style.transform = `translateX(${-pos * (e.cardW + 60)}px)`;
+        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%) scale(${1 - (1 - q) * 0.4})`;
+        n.style.opacity = out * clamp((k - st) / 0.15);
+      } else if (e.t === "draw") {
+        const st = Math.max(e.k, open), u = sine(clamp((k - st) / (e.end - st)));
+        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%)`;
+        n.style.opacity = out * clamp((k - st) / 0.05);
+        n.querySelectorAll("path, rect").forEach((pa) => { pa.style.strokeDasharray = "100 120"; pa.style.strokeDashoffset = 100 * (1 - u); });
+      } else {
+        const dur = { type: 0.2, fade: 0.35, bar: 0.3, star: 0.25, bite: 0.12 }[e.from] || 0.5;
+        const st = Math.max(e.k - dur, open);
+        const q = land(k, st, e.k, ["type", "fade", "bar", "bite"].includes(e.from) ? 0 : e.from === "star" ? 0.18 : 0.07);
+        const a = 1 - q;
+        let tr = "", op = clamp((k - st) / Math.min(dur, 0.15));
+        if (e.from === "pop" || e.from === "star") tr = `scale(${1 - a * 0.6})`;
+        if (e.from === "type") tr = `translateX(${a * -28}px)`;
+        if (e.from === "bar") tr = `scaleX(${q})`;
+        if (e.from === "bite") tr = `scale(${q})`;
+        if (e.from === "fade") op = clamp((k - st) / dur);
+        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%) ${tr}`;
+        n.style.opacity = out * op;
+        const ip = n.querySelector("#ipaja"); if (ip) ip.style.color = k >= 10 ? "#fff" : "";
+        const pr = n.querySelector("#prog"); if (pr) pr.style.width = 100 * sine(clamp((k - 31.5) / 1.5)) + "%";
+        const rt = n.querySelector("#route");
+        if (rt) {
+          const u = sine(clamp((k - 35.5) / 1.5));
+          rt.style.strokeDasharray = "100 120"; rt.style.strokeDashoffset = 100 * (1 - u);
+          const pt = rt.getPointAtLength(rt.getTotalLength() * u);
+          n.querySelector("#rider").setAttribute("transform", `translate(${pt.x} ${pt.y})`);
+          n.querySelector("#rider").style.opacity = k >= 35.5 ? 1 : 0;
+        }
+        for (const [id, tk] of [["searchbtn", 15], ["placebtn", 28], ["side", 23]]) {
+          const b = n.querySelector("#" + id);
+          if (b) { const c = clamp((k - tk + 0.08) / 0.3); b.style.transform = `scale(${1 - 0.1 * Math.sin(Math.PI * c)})`; }
+        }
+      }
+    }
+  });
+
+  // Hand cursor: small, sideways, one path; presses on taps and while dragging.
+  const c = cursorAt(k);
+  let cs = 1;
+  for (const tk of TAPS) { const d = (k - tk + 0.08) / 0.24; if (d > 0 && d < 1) cs = 1 - 0.22 * Math.sin(Math.PI * d); }
+  if (k > DRAG[0] - 0.08 && k < DRAG[1] + 0.08) cs = 0.82;
+  const vis = clamp((k - 5.6) / 0.3) * (1 - clamp((k - 44.9) / 0.2));
+  Object.assign(hand.style, { opacity: vis, transform: `translate(${c.x - 8}px, ${c.y - 6}px) scale(${cs})`, transformOrigin: "8px 6px" });
+
+  fade.style.opacity = clamp((k - 57.3) / 0.7);
+};
+window.render(0);
+</script>
+</body>
+</html>
