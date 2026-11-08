@@ -9,7 +9,8 @@ const { chromium } = require('playwright');
   await page.evaluate(() => document.fonts.ready);
   await page.evaluate(async () => { await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); });
   const n = Math.round(Number(fps) * Number(dur));
-  for (let f = 0; f < n; f++) {
+  const from = Number(process.argv[6] || 0);
+  for (let f = from; f < n; f++) {
     await page.evaluate((t) => window.render(t), f / Number(fps));
     await page.screenshot({ path: `${out}/${String(f).padStart(5, '0')}.png` });
     if (f % 100 === 0) console.log('frame', f, 'of', n);
