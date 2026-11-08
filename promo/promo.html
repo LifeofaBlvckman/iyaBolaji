@@ -2,312 +2,537 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<!-- IyaBolaji one-take promo in the style of the reference. render(t) is a pure function of time. -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Modak&family=Noto+Color+Emoji&display=block" rel="stylesheet">
+<!-- IyaBolaji promo: a shot-for-shot replica of the reference, on the same 20 s of "Body" (146 BPM).
+     render(t) draws the frame at t seconds; nothing depends on wall-clock time. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=block" rel="stylesheet">
 <style>
-  :root { --bg: #e7e5e1; --red: #d9151d; --ink: #141211; --card: #fafaf9; --grey: #8b8680; }
-  html, body { margin: 0; background: var(--bg); }
-  #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: var(--bg); font-family: "Inter", "Noto Color Emoji", sans-serif; }
-  #box { position: absolute; }
-  .layer { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
-  .el { position: absolute; left: 0; top: 0; white-space: nowrap; transform-origin: 50% 50%; }
-  .txt span { display: inline-block; transform-origin: 50% 85%; }
-  .emoji { font-family: "Noto Color Emoji"; }
-  .h { font-weight: 800; letter-spacing: -.02em; line-height: 1.08; }
-  .modak { font-family: "Modak"; line-height: .8; }
-  .lbl { font-weight: 600; font-size: 26px; color: var(--grey); }
-  .item { width: 540px; font-weight: 600; font-size: 38px; color: #6f6a64; padding: 0 28px; box-sizing: border-box; }
-  .photo { border-radius: 20px; object-fit: cover; display: block; background: #efe9df; }
-  .price { font-weight: 800; font-size: 40px; color: var(--red); }
-  .btn { background: var(--red); color: #fff; font-weight: 800; border-radius: 999px; display: grid; place-items: center; }
-  .row { display: flex; align-items: center; gap: 22px; width: 600px; font-weight: 700; font-size: 34px; color: var(--ink); }
-  .row img { width: 84px; height: 84px; border-radius: 14px; object-fit: cover; }
-  .row .p { margin-left: auto; font-weight: 800; }
-  #hand { position: absolute; left: 0; top: 0; width: 70px; height: 70px; z-index: 10; }
-  #fade { position: absolute; inset: 0; background: var(--bg); opacity: 0; z-index: 20; }
+  html, body { margin: 0; background: #e7e5e1; }
+  #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: #e7e5e1; font-family: "Inter", sans-serif; color: #151311; }
+  .abs { position: absolute; left: 0; top: 0; }
+  .box { position: absolute; box-sizing: border-box; }
+  #box { overflow: hidden; }
+  #inner, #over { position: absolute; left: 0; top: 0; }
+  .t { position: absolute; white-space: pre; font-weight: 800; letter-spacing: -0.015em; line-height: 1; }
+  .t span { display: inline-block; transform-origin: 50% 70%; }
+  .lbl { position: absolute; font-weight: 700; font-size: 27px; color: #8e8983; white-space: nowrap; }
+  .emo { position: absolute; display: block; }
+  .card { position: absolute; width: 672px; height: 762px; border-radius: 40px; overflow: hidden;
+          background: linear-gradient(180deg, #fdfdfc, #f4f3f1); box-shadow: 0 26px 50px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.05); }
+  .dish { position: absolute; left: 0; top: 0; width: 672px; height: 762px; }
+  .dish .ph { position: absolute; left: 24px; top: 24px; width: 624px; height: 526px; border-radius: 30px; object-fit: cover; }
+  .dish .nm { position: absolute; left: 30px; top: 582px; font-weight: 800; font-size: 50px; letter-spacing: -0.02em; white-space: nowrap; }
+  .dish .pr { position: absolute; left: 30px; top: 650px; font-weight: 800; font-size: 40px; color: #d9151d; white-space: nowrap; }
+  .dish .ht { position: absolute; right: 28px; top: 646px; display: flex; gap: 2px; }
+  .dish .ht img { width: 46px; height: 46px; }
+  .row { position: absolute; left: 51px; width: 681px; height: 105px; display: flex; align-items: center; gap: 24px; font-size: 38px; font-weight: 600; white-space: nowrap; }
+  .row img { width: 105px; height: 105px; border-radius: 18px; object-fit: cover; }
+  .row b { margin-left: auto; font-weight: 800; }
+  #hand { position: absolute; left: 0; top: 0; width: 98px; height: 98px; z-index: 50; transform-origin: 14px 9px; }
+  #fade { position: absolute; inset: 0; background: #e7e5e1; opacity: 0; z-index: 60; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="mb0" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb3" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb4" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb5" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb6" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb7" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0 0"/></filter>
+  </defs>
+</svg>
 <div id="stage">
-  <div id="box"></div>
-  <!-- Small hand cursor, turned sideways; its fingertip is the hotspot at (8, 6) of the 70px box. -->
-  <svg id="hand" viewBox="0 0 64 64"><g transform="rotate(-62 8 6)">
-    <path d="M14.5 6.5c0-2.6 4.8-2.6 4.8 0v17.2c0-2.7 4.6-2.7 4.6 0v2.3c0-2.6 4.6-2.6 4.6 0v2.6c0-2.5 4.4-2.5 4.4.1v11.5c0 7-4.6 12.4-12.1 12.4h-2.9c-4.7 0-7.6-2.4-10-6.6L1.6 37.4c-1.4-2.4 1.9-4.6 3.7-2.6l4.4 5V6.5z" transform="translate(-6 -1)"
-      fill="#fff" stroke="#141211" stroke-width="2.4" stroke-linejoin="round"/></g></svg>
+  <div id="cards"></div>
+  <div id="box" class="box"><div id="inner"></div></div>
+  <div id="over"></div>
+  <div id="side" class="card" style="width:405px;height:471px;border-radius:30px">
+    <img src="assets/spaghetti.jpg" style="position:absolute;left:14px;top:14px;width:377px;height:300px;border-radius:22px;object-fit:cover;object-position:50% 45%">
+    <div style="position:absolute;left:20px;top:330px;font-weight:800;font-size:33px;letter-spacing:-.02em;white-space:nowrap">Stir Fry Spaghetti</div>
+    <div style="position:absolute;left:20px;top:376px;font-weight:800;font-size:31px;color:#d9151d">₦2,000</div>
+  </div>
+  <div id="stagefx" class="abs" style="width:1080px;height:1080px"></div>
+  <!-- Small hand cursor, turned sideways; the fingertip is the hotspot at (12, 8) of the box. -->
+  <svg id="hand" viewBox="0 0 64 64"><g transform="rotate(-38 12 8)">
+    <path d="M14.5 6.5c0-2.6 4.8-2.6 4.8 0v17.2c0-2.7 4.6-2.7 4.6 0v2.3c0-2.6 4.6-2.6 4.6 0v2.6c0-2.5 4.4-2.5 4.4.1v11.5c0 7-4.6 12.4-12.1 12.4h-2.9c-4.7 0-7.6-2.4-10-6.6L1.6 37.4c-1.4-2.4 1.9-4.6 3.7-2.6l4.4 5V6.5z" transform="translate(-4.5 1.5)"
+      fill="#fff" stroke="#141211" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M18 28v8M22.6 28.5v7.5M27.2 30v6" transform="translate(-4.5 1.5)" stroke="#141211" stroke-width="1.6" stroke-linecap="round"/></g></svg>
   <div id="fade"></div>
 </div>
-<svg width="0" height="0" style="position:absolute"><symbol id="food" viewBox="0 0 404 88"><g fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"><path pathLength="100" d="M18 76V34Q18 12 40 12H70M18 44H58"/><rect pathLength="100" x="92" y="12" width="104" height="64" rx="32"/><rect pathLength="100" x="216" y="12" width="104" height="64" rx="32"/><path pathLength="100" d="M342 12V76H354Q386 76 386 44Q386 12 354 12Z"/></g></symbol></svg>
 <script>
-const B = 60 / 146;                         // one beat of Body (146 BPM); video starts 2 beats before the drop
-const A = "../assets/";
-// Real photos go in assets/img; until the spaghetti photo arrives, its drawing stands in.
-const SPAG = A + "art/stir-fry-spaghetti.webp", SPAG_ART = true;
-const BG = [231, 229, 225], CARD = [250, 250, 249], RED = [222, 40, 36], INK = [20, 18, 17], MAP = [222, 218, 213], KRAFT = [199, 158, 104];
-const SETTLE = 0.42, MORPH = 0.75;
-
-// Reaches 1 exactly on the landing beat, then one small overshoot and settle.
-function land(k, start, end, over = 0.06, settle = SETTLE) {
-  if (k <= start) return 0;
-  if (k < end) { const u = (k - start) / (end - start); return u * u * (2.2 - 1.2 * u); }
-  const s = (k - end) / settle;
-  return s < 1 ? 1 + over * Math.sin(Math.PI * s) * (1 - s) * 1.6 : 1;
-}
+/* ---------- helpers ---------- */
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const mix = (a, b, p) => a + (b - a) * p;
-const ease = (u) => (u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
-const outQuint = (u) => 1 - Math.pow(1 - u, 5);
-const sine = (u) => -(Math.cos(Math.PI * u) - 1) / 2;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const io = (u) => (u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+const oc = (u) => 1 - Math.pow(1 - u, 3);
+const ic = (u) => u * u * u;
 const hash = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
-const rgb = (c, a = 1) => `rgba(${c.map(Math.round).join(",")},${a})`;
+const rgb = (c) => `rgb(${c.map(Math.round).join(",")})`;
+const mixC = (a, b, p) => a.map((v, i) => mix(v, b[i], p));
+// Arrives exactly at t1 (still moving), then one small overshoot and settle.
+function land(t, t0, t1, over = 0.06, settle = 0.2, e) {
+  if (t <= t0) return 0;
+  if (t < t1) { const u = (t - t0) / (t1 - t0); return e === "out" ? oc(u) : u * u * (2.2 - 1.2 * u); }
+  const s = (t - t1) / settle;
+  return s < 1 ? 1 + over * Math.sin(Math.PI * s) * (1 - s) * 1.6 : 1;
+}
+// Pop: 0 -> overshoot -> 1
+function pop(t, t0, dur = 0.12, over = 0.25) {
+  if (t <= t0) return 0;
+  const u = (t - t0) / dur;
+  if (u < 1) return oc(u) * (1 + over * Math.sin(Math.PI * u * 0.5));
+  const s = (u - 1) / 1.2;
+  return s < 1 ? 1 + over * Math.cos(Math.PI * s * 0.5) * (1 - s) : 1;
+}
+const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstElementChild; };
+function blur(id, sx, sy) {
+  const f = document.querySelector(`#${id} feGaussianBlur`);
+  sx = Math.min(36, sx); sy = Math.min(36, sy);
+  f.setAttribute("stdDeviation", `${sx.toFixed(2)} ${sy.toFixed(2)}`);
+  return sx + sy > 0.4 ? `url(#${id})` : "none";
+}
+const SHUT = 1 / 120;   // half-frame shutter at 60 fps
 
+/* ---------- colours & container keyframes ---------- */
+const RED = [226, 44, 38], WHITE = [250, 250, 249], BLACK = [24, 23, 22], MAP = [221, 217, 212], KRAFT = [196, 151, 97];
+// t0 = move starts, t1 = lands. cf = colour crossfade window. sh = top sheen strength.
+const K = [
+  { t0: -1, t1: 0, x: 546, y: 540, w: 200, h: 110, r: 55, c: RED, sh: .14 },
+  { t0: 0.0, t1: 0.2, x: 690, y: 521, w: 618, h: 222, r: 50, c: RED, sh: .14, over: .07, settle: .25, arc: 5, e: "out" },
+  { t0: 1.08, t1: 1.24, x: 388, y: 519, w: 651, h: 282, r: 46, c: WHITE, sh: .5, cf: [1.02, 1.42], cfe: "lin", over: .05 },
+  { t0: 2.44, t1: 2.6, x: 540, y: 540, w: 780, h: 618, r: 42, c: WHITE, sh: .5, over: .05 },
+  { t0: 3.62, t1: 3.86, x: 540, y: 540, w: 900, h: 162, r: 81, c: WHITE, sh: .5, over: .06 },
+  { t0: 5.0, t1: 5.2, x: 540, y: 550, w: 672, h: 762, r: 40, c: WHITE, sh: .5, over: .05 },
+  { t0: 8.45, t1: 8.62, x: 402, y: 548, w: 582, h: 660, r: 36, c: WHITE, sh: .5, over: .05 },
+  { t0: 9.36, t1: 9.52, x: 540, y: 552, w: 600, h: 540, r: 40, c: WHITE, sh: .5, over: 0 },
+  { t0: 9.52, t1: 9.72, x: 540, y: 550, w: 780, h: 717, r: 40, c: WHITE, sh: .5, over: .04, settle: .25 },
+  { t0: 10.68, t1: 10.8, x: 540, y: 553, w: 789, h: 690, r: 40, c: BLACK, sh: .12, cf: [10.66, 10.8], over: 0 },
+  { t0: 10.86, t1: 10.96, x: 540, y: 550, w: 858, h: 297, r: 38, c: BLACK, sh: .12, over: .07, settle: .22 },
+  { t0: 11.66, t1: 11.86, x: 540, y: 540, w: 858, h: 780, r: 40, c: MAP, sh: 0, cf: [11.52, 11.7], over: .04 },
+  { t0: 12.45, t1: 12.6, x: 540, y: 540, w: 858, h: 780, r: 40, c: KRAFT, sh: 0, cf: [12.45, 12.6], over: 0 },
+  { t0: 12.6, t1: 12.78, x: 540, y: 440, w: 420, h: 621, r: 10, c: KRAFT, sh: 0, over: .05 },
+  { t0: 13.94, t1: 14.04, x: 540, y: 443, w: 440, h: 630, r: 26, c: WHITE, sh: .5, cf: [13.95, 14.02], over: 0 },
+  { t0: 14.04, t1: 14.2, x: 540, y: 540, w: 780, h: 780, r: 40, c: WHITE, sh: .5, over: .04 },
+];
+function boxAt(t) {
+  let i = 0;
+  while (i < K.length - 1 && t >= K[i + 1].t0) i++;
+  if (i === 0) return { ...K[0], rot: 0 };
+  const cur = K[i], prev = K[i - 1];
+  const p = land(t, cur.t0, cur.t1, cur.over ?? .05, cur.settle ?? .2, cur.e);
+  let c = K[0].c, sh = K[0].sh;
+  for (const k of K.slice(1)) {
+    const cf = k.cf || [k.t0, k.t1], u = seg(t, cf[0], cf[1]);
+    if (u <= 0) break;
+    const pc = k.cfe === "out" ? oc(u) : k.cfe === "lin" ? u : io(u);
+    c = mixC(c, k.c, pc); sh = mix(sh, k.sh, pc);
+  }
+  return {
+    x: mix(prev.x, cur.x, p), y: mix(prev.y, cur.y, p), w: mix(prev.w, cur.w, p), h: mix(prev.h, cur.h, p),
+    r: mix(prev.r, cur.r, clamp(p)), c, sh,
+    rot: (cur.arc || 0) * Math.sin(Math.PI * clamp(p)),
+  };
+}
+
+/* ---------- carousel ---------- */
+const PITCH = 759;
 const DISHES = [
-  { img: A + "art/jollof-enjoyment.webp", name: "Jollof Enjoyment", price: "₦6,000", heat: 3, art: true },
-  { img: A + "art/stir-fry-spaghetti.webp", name: "Stir Fry Spaghetti", price: "₦2,000", heat: 2, art: true },
-  { img: A + "art/asun.webp", name: "Asun Goat Meat", price: "₦3,500", heat: 5, art: true },
-  { img: A + "img/turkey.jpg", name: "Fried Turkey", price: "₦7,000", heat: 2 },
+  { img: "../assets/img/turkey.jpg", name: "Fried Turkey", price: "₦7,000", heat: 2 },
+  { img: "assets/spaghetti.jpg", name: "Stir Fry Spaghetti", price: "₦2,000", heat: 2, pos: "50% 40%" },
+  { img: "assets/fried-yam.jpg", name: "Fried Yam", price: "Sides", pos: "50% 45%" },
+  { img: "../assets/img/fish-pepper-stew.jpg", name: "Fish Pepper Stew", price: "Protein" },
+  { img: "assets/logo.png", name: "Full menu", price: "Rice, soups & more", logo: true },
 ];
-const chilies = (n) => "🌶️".repeat(n);
-const dishCard = (d, w) => `<div style="width:${w}px">
-  <img class="photo" src="${d.img}" style="width:${w}px;height:${Math.round(w * .82)}px;${d.art ? "object-fit:contain;background:#f4efe6" : ""}">
-  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:20px">
-    <div><div class="h" style="font-size:42px;color:#141211">${d.name}</div><div class="price" style="margin-top:6px">${d.price}</div></div>
-    <div class="emoji" style="font-size:30px">${chilies(d.heat)}</div></div></div>`;
+const dishHTML = (d) => `<div class="dish">
+  <img class="ph" src="${d.img}" style="${d.pos ? `object-position:${d.pos};` : ""}${d.logo ? "object-fit:contain;background:#fff;padding:120px 70px;box-sizing:border-box" : ""}">
+  <div class="nm">${d.name}</div><div class="pr">${d.price}</div>
+  <div class="ht">${"<img src='assets/emoji/pepper.png'>".repeat(d.heat || 0)}</div></div>`;
+const SWIPES = [[6.0, 6.2, 0, 1], [6.3, 6.5, 1, 2], [6.68, 7.06, 2, 3], [7.18, 7.32, 3, 4], [7.55, 8.0, 4, 0]];
+function stripPos(t) {
+  let v = 0;
+  for (const [a, b, f, to] of SWIPES) {
+    if (t < a) break;
+    if (t < b) return mix(f, to, io((t - a) / (b - a)));
+    const s = (t - b) / 0.16;
+    v = s < 1 ? to + (to - f) * 0.045 * Math.sin(Math.PI * s) * (1 - s) * 1.6 : to;
+  }
+  return v;
+}
 
-/* Storyboard: one container, a state per step; every landing is on a beat. ----- */
-const S = [
-  { k: 1, x: 540, y: 520, w: 64, h: 64, r: 32, bg: RED, sh: 1, els: [] },
-  { k: 2, x: 540, y: 520, w: 580, h: 196, r: 46, bg: RED, sh: 1, ov: 1, els: [
-    { t: "html", html: '<span class="lbl">Me</span>', x: 250, y: -132, k: 2.5, from: "fade" },
-    { t: "text", s: "yo, what's for", color: [255, 255, 255], size: 54, x: -48, y: -32, k: 3, cls: "h" },
-    { t: "text", s: "dinner", color: [255, 255, 255], size: 54, x: -132, y: 32, k: 3.5, cls: "h" },
-    { t: "html", html: '<span class="emoji" style="font-size:66px">😋</span>', x: 210, y: 40, k: 4, from: "pop" },
-  ] },
-  { k: 5, x: 540, y: 520, w: 620, h: 240, r: 40, bg: CARD, sh: 1, ov: 1, els: [
-    { t: "html", html: '<span class="lbl">Friend</span>', x: -240, y: -152, k: 5.5, from: "fade" },
-    { t: "text", s: "get something", color: INK, size: 52, x: -78, y: -38, k: 6, cls: "h" },
-    { t: "text", s: "from IyaBolaji", color: INK, size: 52, x: -66, y: 30, k: 6.5, cls: "h", red: [5, 14] },
-    { t: "html", html: '<span class="emoji" style="font-size:72px">🍲</span>', x: 230, y: 50, k: 7, from: "pop" },
-  ] },
-  { k: 8, x: 540, y: 540, w: 640, h: 600, r: 30, bg: CARD, sh: 1, els: [
-    { t: "text", s: "Where are you?", color: INK, size: 56, x: -76, y: -220, k: 9, cls: "h" },
-    { t: "html", html: '<div id="selbar" style="width:580px;height:78px;border-radius:18px;background:#de2824"></div>', x: 0, y: 60, k: 10, from: "bar" },
-    ...["Ikeja", "Lekki", "Ipaja", "Yaba"].map((c, i) => ({ t: "html", html: `<div class="item"${c === "Ipaja" ? ' id="ipaja"' : ""}>${c}</div>`, x: -20, y: -100 + i * 80, k: 9.25 + i * 0.25, from: "type" })),
-  ] },
-  { k: 12, x: 540, y: 540, w: 820, h: 150, r: 75, bg: CARD, sh: 1, els: [
-    { t: "html", html: '<div class="btn" id="searchbtn" style="width:110px;height:110px"><svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></div>', x: 335, y: 0, k: 12.75, from: "pop" },
-    { t: "type", s: "IyaBolaji", x: -330, y: 0, k: 13, end: 14, size: 56 },
-  ] },
-  { k: 16, x: 540, y: 540, w: 600, h: 740, r: 30, bg: CARD, sh: 1, els: [
-    { t: "carousel", x: 0, y: 0, k: 17, swipeFrom: 17.5, swipeTo: 19, cardW: 540 },
-    { t: "html", html: '<span class="emoji" style="font-size:60px">🔥</span>', x: 225, y: -270, k: 19.5, from: "pop" },
-  ] },
-  { k: 21, x: 540, y: 540, w: 880, h: 740, r: 30, bg: CARD, sh: 1, els: [
-    { t: "html", html: dishCard(DISHES[3], 500), x: -170, y: 0, k: 21.5, from: "fade" },
-    { t: "html", html: `<div id="side" style="width:290px;padding:16px;border-radius:24px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.14)"><img class="photo" src="${SPAG}" style="width:290px;height:250px;${SPAG_ART ? "object-fit:contain;background:#f4efe6" : ""}"><div class="h" style="font-size:32px;margin-top:14px;color:#141211">Stir Fry Spaghetti</div><div class="price" style="font-size:32px">₦2,000</div></div>`, x: 268, y: 30, k: 22, from: "pop" },
-  ] },
-  { k: 24, x: 540, y: 540, w: 700, h: 640, r: 30, bg: CARD, sh: 1, els: [
-    { t: "text", s: "Your order", color: INK, size: 58, x: -150, y: -238, k: 25, cls: "h" },
-    { t: "html", html: `<div class="row"><img src="${A}img/turkey.jpg"><span>Fried Turkey</span><span class="p">₦7,000</span></div>`, x: 0, y: -120, k: 25.5, from: "type" },
-    { t: "html", html: `<div class="row"><img src="${SPAG}" style="${SPAG_ART ? "object-fit:contain;background:#f4efe6" : ""}"><span>Stir Fry Spaghetti</span><span class="p">₦2,000</span></div>`, x: 0, y: -10, k: 25.75, from: "type" },
-    { t: "html", html: '<div class="row" style="font-weight:600;color:#8b8680"><span>Prep time</span><span class="p" style="color:#141211">21–31 min</span></div>', x: 0, y: 90, k: 26, from: "type" },
-    { t: "html", html: '<div class="btn" id="placebtn" style="width:600px;height:96px;font-size:40px">Place order</div>', x: 0, y: 220, k: 26.5, from: "pop" },
-  ] },
-  { k: 30, x: 540, y: 540, w: 780, h: 230, r: 36, bg: INK, sh: 1, els: [
-    { t: "text", s: "On the way", color: [255, 255, 255], size: 68, x: -150, y: -42, k: 31, cls: "h" },
-    { t: "html", html: '<span style="font-weight:600;font-size:32px;color:#cfc9c2">Fresh from Mama\'s pot</span>', x: -191, y: 26, k: 31.5, from: "fade" },
-    { t: "html", html: '<div style="width:680px;height:10px;border-radius:5px;background:#3a3633;overflow:hidden"><div id="prog" style="width:0;height:100%;background:#de2824;border-radius:5px"></div></div>', x: 0, y: 82, k: 31.5, from: "fade" },
-  ] },
-  { k: 34, x: 540, y: 540, w: 660, h: 620, r: 30, bg: MAP, sh: 1, els: [
-    { t: "html", html: `<svg width="660" height="620" viewBox="0 0 660 620"><g stroke="#fff" stroke-width="30" fill="none"><path d="M180 0V620M470 0V620M0 160H660M0 430H660"/><path d="M-20 560L680 180"/></g>
-      <path id="route" pathLength="100" d="M70 560C190 470 260 380 330 350S480 300 560 200" fill="none" stroke="#de2824" stroke-width="12" stroke-linecap="round"/>
-      <g id="rider"><circle r="22" fill="#de2824" opacity=".25"/><circle r="12" fill="#de2824" stroke="#fff" stroke-width="5"/></g></svg>`, x: 0, y: 0, k: 34.5, from: "fade" },
-    { t: "html", html: '<div style="background:#141211;color:#fff;font-weight:700;font-size:30px;padding:12px 22px;border-radius:14px">Rider on the way</div>', x: -160, y: -250, k: 35, from: "pop" },
-  ] },
-  { k: 38, x: 540, y: 500, w: 380, h: 480, r: 8, bg: KRAFT, sh: 1, ov: 1, els: [
-    { t: "html", html: '<div style="width:380px;height:480px;border-radius:8px;background:linear-gradient(90deg,rgba(0,0,0,.12),rgba(255,255,255,.08) 30%,rgba(0,0,0,.06) 70%,rgba(0,0,0,.16)),linear-gradient(180deg,rgba(0,0,0,.18) 0 34px,transparent 34px)"></div>', x: 0, y: 0, k: 38.42, from: "fade" },
-    { t: "html", html: '<div style="text-align:center"><div class="modak" style="font-size:80px;color:#d9151d">iyabolaji</div><svg viewBox="0 0 404 88" width="150" style="display:block;margin:8px auto 0;color:#141211"><use href="#food"/></svg></div>', x: 0, y: 10, k: 39, from: "pop" },
-    ...[0, 1, 2, 3, 4].map((i) => ({ t: "html", html: `<svg viewBox="0 0 24 24" width="62" height="62" id="star${i}"><path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5 6 20.8l1.3-6.7-5-4.6 6.8-.8z" fill="#141211"/></svg>`, x: -140 + i * 70, y: 320, k: 40 + i * 0.25, from: "star" })),
-  ] },
-  { k: 42, x: 540, y: 540, w: 760, h: 760, r: 30, bg: CARD, sh: 1, els: [
-    { t: "html", html: `<img class="photo" src="${A}img/turkey.jpg" style="width:760px;height:760px;border-radius:0">`, x: 0, y: 0, k: 43, from: "pop" },
-    ...[[380, -60, 44], [380, 110, 44.5]].map(([x, y, k]) => ({ t: "html", html: '<div style="width:170px;height:170px;border-radius:50%;background:#e7e5e1"></div>', x, y, k, from: "bite" })),
-  ] },
-  { k: 46, x: 540, y: 540, w: 960, h: 320, r: 30, bg: BG, sh: 0, els: [
-    { t: "text", s: "The pepper is", color: INK, size: 84, x: 0, y: -50, k: 47, cls: "h", red: [4, 10] },
-    { t: "text", s: "in every bite", color: INK, size: 84, x: -46, y: 46, k: 47.5, cls: "h" },
-    { t: "html", html: '<span class="emoji" style="font-size:80px">😋</span>', x: 290, y: 52, k: 48, from: "pop" },
-  ] },
-  { k: 50, x: 540, y: 540, w: 900, h: 560, r: 30, bg: BG, sh: 0, els: [
-    { t: "text", s: "iyabolaji", color: [217, 21, 29], size: 200, x: 0, y: -50, k: 51, cls: "modak" },
-    { t: "draw", x: 0, y: 130, w: 340, k: 51.5, end: 52 },
-  ] },
-  { k: 54, x: 540, y: 540, w: 960, h: 200, r: 30, bg: BG, sh: 0, els: [
-    { t: "text", s: "Made by Blvckman", color: INK, size: 84, x: 0, y: 0, k: 55, cls: "h", red: [13, 16], redColor: "#ff6410" },   // Blvckman brand: "man" in orange
-  ] },
-];
-for (let i = 0; i < S.length; i++) S[i].start = S[i].k - (i === 0 ? 0.75 : MORPH);
-
-/* Cursor: one continuous path. Slow drift beside each action, then a fast sweep past it. */
-const P = [
-  [5.5, 1150, 860, "d"], [6.5, 800, 668, "d"], [7.5, 786, 650, "d"],
-  [9.5, 810, 640, "d"], [10.0, 700, 602, "d"], [10.3, 990, 790, "s"],
-  [14.5, 935, 600, "d"], [15.0, 880, 548, "d"], [15.3, 1000, 880, "s"],
-  [17.25, 880, 520, "d"], [17.5, 800, 540, "d"], [18.0, 250, 565, "s"],
-  [22.5, 990, 660, "d"], [23.0, 820, 560, "d"], [23.3, 420, 960, "s"],
-  [27.5, 905, 805, "d"], [28.0, 770, 770, "d"], [28.3, 260, 1000, "s"],
-  [33.0, 925, 640, "d"], [37.0, 830, 430, "d"], [37.3, 300, 880, "s"],
-  [40.75, 760, 880, "d"], [41.0, 680, 840, "d"], [41.3, 990, 380, "s"],
-  [44.75, 950, 320, "d"], [45.1, 1190, 180, "s"],
-];
-const TAPS = [10, 15, 23, 28, 41];
-const DRAG = [17.5, 18.0];
+/* ---------- cursor: one continuous path (hotspot coordinates) ---------- */
+const CP = [[0.3, 1150, 900], [0.4, 1043, 813], [0.5, 977, 715], [0.6, 902, 627], [0.7, 858, 605], [0.8, 822, 636], [0.9, 814, 680], [1.0, 792, 707],
+  [1.1, 773, 711], [1.2, 741, 713], [1.3, 725, 727], [1.6, 611, 711], [1.7, 549, 676], [1.8, 523, 653], [1.842, 524, 652], [1.9, 580, 653],
+  [2.0, 659, 653], [2.1, 747, 653], [2.2, 809, 645], [2.3, 844, 600], [2.4, 853, 559], [2.5, 865, 503], [2.6, 867, 451], [2.7, 836, 487],
+  [2.8, 792, 553], [2.9, 752, 605], [3.0, 712, 632], [3.1, 691, 649], [3.172, 700, 652], [3.3, 750, 677], [3.5, 902, 694], [3.6, 963, 627],
+  [3.7, 1030, 553], [3.8, 1030, 495], [3.9, 1035, 451], [4.0, 1007, 451], [4.1, 998, 451], [4.2, 985, 473], [4.3, 963, 495], [4.4, 932, 517],
+  [4.5, 945, 535], [4.6, 938, 545], [4.726, 912, 552], [4.8, 822, 587], [4.9, 680, 570], [5.0, 522, 548], [5.1, 236, 460], [5.2, 227, 372],
+  [5.3, 470, 328], [5.4, 747, 275], [5.5, 924, 292], [5.6, 932, 416], [5.7, 875, 570], [5.8, 850, 650], [5.96, 857, 655], [6.12, 640, 665],
+  [6.28, 850, 655], [6.44, 640, 660], [6.64, 855, 652], [6.85, 600, 660], [7.15, 835, 650], [7.3, 650, 655], [7.45, 760, 640], [7.6, 800, 636],
+  [7.7, 756, 636], [7.8, 712, 636], [7.9, 668, 640], [8.0, 646, 649], [8.1, 624, 665], [8.22, 650, 650], [8.3, 725, 614], [8.4, 804, 539],
+  [8.5, 875, 495], [8.6, 902, 504], [8.7, 888, 570], [8.8, 858, 689], [8.9, 814, 764], [9.001, 822, 773], [9.1, 858, 720], [9.2, 910, 610],
+  [9.3, 954, 504], [9.4, 998, 416], [9.5, 998, 372], [9.6, 977, 389], [9.7, 932, 420], [9.8, 888, 477], [9.9, 836, 530], [10.0, 800, 574],
+  [10.1, 747, 632], [10.2, 703, 685], [10.3, 659, 742], [10.4, 646, 786], [10.48, 652, 800], [10.6, 765, 861], [10.7, 866, 870], [10.8, 977, 892],
+  [10.9, 1043, 918], [11.0, 1140, 980]];
+const CLICKS = [1.842, 3.172, 4.726, 8.22, 9.001, 10.48];
+const DRAGS = [[5.96, 6.12], [6.28, 6.44], [6.64, 6.85], [7.15, 7.3]];
 function cr(p0, p1, p2, p3, u) {
   const u2 = u * u, u3 = u2 * u;
-  return .5 * ((2 * p1) + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u2 + (-p0 + 3 * p1 - 3 * p2 + p3) * u3);
+  return .5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u2 + (-p0 + 3 * p1 - 3 * p2 + p3) * u3);
 }
-function cursorAt(k) {
-  if (k <= P[0][0]) return { x: P[0][1], y: P[0][2] };
-  for (let i = 0; i < P.length - 1; i++) {
-    if (k > P[i + 1][0]) continue;
-    const u0 = (k - P[i][0]) / (P[i + 1][0] - P[i][0]);
-    const u = P[i + 1][3] === "s" ? ease(u0) : sine(u0);
-    const q = (j) => P[clamp(j, 0, P.length - 1)];
-    return { x: cr(q(i - 1)[1], q(i)[1], q(i + 1)[1], q(i + 2)[1], u), y: cr(q(i - 1)[2], q(i)[2], q(i + 1)[2], q(i + 2)[2], u) };
+function cursorAt(t) {
+  if (t <= CP[0][0]) return [CP[0][1], CP[0][2]];
+  for (let i = 0; i < CP.length - 1; i++) {
+    if (t > CP[i + 1][0]) continue;
+    const u = (t - CP[i][0]) / (CP[i + 1][0] - CP[i][0]);
+    const q = (j) => CP[clamp(j, 0, CP.length - 1)];
+    return [cr(q(i - 1)[1], q(i)[1], q(i + 1)[1], q(i + 2)[1], u), cr(q(i - 1)[2], q(i)[2], q(i + 1)[2], q(i + 2)[2], u)];
   }
-  const l = P[P.length - 1]; return { x: l[1], y: l[2] };
+  const l = CP[CP.length - 1]; return [l[1], l[2]];
 }
 
-/* Build the DOM ------------------------------------------------------------- */
-const box = document.getElementById("box");
-for (const s of S) {
-  s.layer = document.createElement("div");
-  s.layer.className = "layer";
-  box.append(s.layer);
-  for (const e of s.els) {
-    const el = document.createElement("div");
-    el.className = "el";
-    if (e.t === "text") {
-      el.className += " txt " + e.cls;
-      el.style.fontSize = e.size + "px";
-      e.spans = [...e.s].map((ch, i) => {
-        const sp = document.createElement("span");
-        sp.textContent = ch === " " ? " " : ch;
-        sp.style.color = e.red && i >= e.red[0] && i < e.red[1] ? (e.redColor || "#de2824") : rgb(e.color);
-        el.append(sp); return sp;
-      });
-    } else if (e.t === "type") {
-      el.innerHTML = `<span class="h" style="font-size:${e.size}px;color:#141211"></span><span id="caret" style="display:inline-block;width:4px;height:${e.size}px;background:#de2824;vertical-align:-8px;margin-left:4px"></span>`;
-      el.style.transform = `translate(${e.x}px, ${e.y}px) translateY(-50%)`;
-    } else if (e.t === "carousel") {
-      el.innerHTML = `<div style="width:${e.cardW}px;height:640px;overflow:hidden"><div class="strip" style="display:flex;gap:60px">${DISHES.map((d) => dishCard(d, e.cardW)).join("")}</div></div>`;
-    } else if (e.t === "draw") {
-      el.innerHTML = `<svg viewBox="0 0 404 88" width="${e.w}" style="display:block;color:#141211"><use href="#food"/></svg>`;
-    } else el.innerHTML = e.html;
-    s.layer.append(el);
-    e.node = el;
-  }
-}
-const hand = document.getElementById("hand"), fade = document.getElementById("fade");
+/* ---------- build the DOM ---------- */
+const stage = document.getElementById("stage"), box = document.getElementById("box"), inner = document.getElementById("inner"),
+      over = document.getElementById("over"), fx = document.getElementById("stagefx"), side = document.getElementById("side"),
+      hand = document.getElementById("hand"), fade = document.getElementById("fade");
 
-/* Render one moment --------------------------------------------------------- */
+// Wavy text: one span per letter. lines: [{s, x, y (centre), size, color, red: [a,b], t0, step}]
+function makeText(parent, s, x, y, size, color, opts = {}) {
+  const el = document.createElement("div");
+  el.className = "t"; el.style.fontSize = size + "px"; el.style.left = x + "px"; el.style.top = y - size * 0.5 + "px";
+  if (opts.center) el.style.transform = "translateX(-50%)";
+  const spans = [...s].map((ch, i) => {
+    const sp = document.createElement("span"); sp.textContent = ch;
+    sp.style.color = opts.red && i >= opts.red[0] && i < opts.red[1] ? (opts.redColor || "#d9151d") : color;
+    el.append(sp); return sp;
+  });
+  parent.append(el);
+  return { el, spans, size };
+}
+function waveLetters(T, t, times, opts = {}) {
+  T.spans.forEach((sp, i) => {
+    const ti = times[i];
+    if (t < ti) { sp.style.opacity = 0; return; }
+    const q = land(t, ti, ti + (opts.dur || 0.1), 0.09 + 0.06 * hash(i + 3), 0.1 + 0.05 * hash(i * 7));
+    const a = 1 - q;
+    const amp = (opts.amp || 1) * T.size / 54;
+    const wave = Math.sin(i * 1.1 + t * 18) * 16 * clamp(a) * amp;
+    sp.style.opacity = clamp((t - ti) / 0.04);
+    sp.style.transform = `translateY(${a * -46 * amp + wave}px) rotate(${a * (hash(i + 11) * 30 - 15)}deg) scale(${1 + a * 0.7})`;
+    if (opts.grey) sp.style.color = q < 0.9 ? "#9b968f" : "";
+  });
+}
+function scatter(T, t, t0) {
+  T.spans.forEach((sp, i) => {
+    const s0 = t0 + hash(i * 5) * 0.05, u = seg(t, s0, s0 + 0.1);
+    if (u <= 0) return;
+    sp.style.opacity = 1 - u;
+    sp.style.transform = `translate(${(hash(i + 2) - .5) * 60 * u}px, ${(hash(i + 9) - .5) * 70 * u}px) rotate(${(hash(i) - .5) * 60 * u}deg) scale(${1 + .4 * u})`;
+  });
+}
+const emo = (parent, src, size) => { const im = document.createElement("img"); im.className = "emo"; im.src = src; im.style.width = im.style.height = size + "px"; parent.append(im); return im; };
+const place = (el, x, y, s = 1, extra = "") => { el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${s}) ${extra}`; };
+
+// Scene: Me bubble (overlay that follows the box)
+const me = document.createElement("div"); me.className = "abs"; over.append(me);
+const meLbl = $(`<div class="lbl">Me</div>`); me.append(meLbl);
+const me1 = makeText(me, "yo what's for", 51, 73, 54, "#fff"), me2 = makeText(me, "dinner", 51, 148, 54, "#fff");
+const meEmo = emo(me, "assets/emoji/yum.png", 96);
+// Scene: Friend bubble
+const fr = document.createElement("div"); fr.className = "abs"; over.append(fr);
+const frLbl = $(`<div class="lbl">Friend</div>`); fr.append(frLbl);
+const frL = [makeText(fr, "get something", 51, 75, 54, "#151311"), makeText(fr, "from iyabolaji's", 51, 141, 54, "#151311"), makeText(fr, "kitchen", 51, 207, 54, "#151311")];
+const frEmo = emo(fr, "assets/emoji/pot.png", 84);
+// Scene: Where are you?
+const wh = document.createElement("div"); wh.className = "abs"; inner.append(wh);
+const whBar = $(`<div style="position:absolute;left:48px;top:357px;width:684px;height:96px;border-radius:22px;background:linear-gradient(180deg,#e8362f,#d41e21);transform-origin:0 50%"></div>`); wh.append(whBar);
+const whT = makeText(wh, "Where are you?", 48, 84, 58, "#151311");
+const CITIES = ["Abuja", "Benin", "Lagos", "PH"];
+const whItems = CITIES.map((c, i) => { const d = $(`<div style="position:absolute;left:84px;top:${[192, 297, 405, 510][i] - 21}px;font-weight:700;font-size:40px;white-space:nowrap">${c}</div>`); wh.append(d); return d; });
+// Scene: search
+const se = document.createElement("div"); se.className = "abs"; inner.append(se);
+const seTxt = $(`<div style="position:absolute;left:60px;top:50px;height:62px;display:flex;align-items:center;font-weight:800;font-size:56px;letter-spacing:-.02em;white-space:pre"><span></span><i style="display:inline-block;width:5px;height:60px;background:#e2261f;margin-left:4px;border-radius:2px"></i></div>`); se.append(seTxt);
+const seBtn = $(`<div style="position:absolute;left:0;top:0;width:126px;height:126px;border-radius:50%;background:linear-gradient(180deg,#ea3b33,#d31d20);display:grid;place-items:center"><svg viewBox="0 0 24 24" width="54" height="54" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.3"/><path d="M15.3 15.3 20.5 20.5"/></svg></div>`); se.append(seBtn);
+const QUERY = "IyaBolaji", TAPS = [3.989, 4.118, 4.25, 4.382, 4.514], TYPED = [1, 3, 5, 7, 9];
+// Scene: product card + carousel (card 0 lives in the box; the rest are separate cards)
+const pc = document.createElement("div"); pc.className = "abs"; pc.style.transformOrigin = "0 0"; inner.append(pc);
+pc.innerHTML = dishHTML(DISHES[0]);
+const pcPh = pc.querySelector(".ph"), pcTx = [pc.querySelector(".nm"), pc.querySelector(".pr"), pc.querySelector(".ht")];
+const pcFire = emo(pc, "assets/emoji/fire.png", 108);
+const cardsEl = document.getElementById("cards");
+const others = DISHES.slice(1).map((d) => { const c = $(`<div class="card">${dishHTML(d)}</div>`); cardsEl.append(c); return c; });
+// Scene: your order
+const od = document.createElement("div"); od.className = "abs"; inner.append(od);
+const odT = makeText(od, "Your order", 48, 81, 60, "#151311");
+const odRows = [
+  $(`<div class="row" style="top:148px"><img src="../assets/img/turkey.jpg"><span>Fried Turkey</span><b>₦7,000</b></div>`),
+  $(`<div class="row" style="top:277px"><img src="assets/spaghetti.jpg"><span>Stir Fry Spaghetti</span><b>₦2,000</b></div>`),
+  $(`<div class="row" style="top:398px;height:56px;font-size:34px;color:#8e8983;font-weight:500"><span>Prep time</span><b style="color:#151311">21 - 31 min</b></div>`),
+];
+odRows.forEach((r) => od.append(r));
+const odBtn = $(`<div style="position:absolute;left:48px;top:561px;width:684px;height:105px;border-radius:53px;background:linear-gradient(180deg,#e8362f,#d41e21);color:#fff;font-weight:800;font-size:44px;display:grid;place-items:center">Place order</div>`); od.append(odBtn);
+// Scene: on the way
+const ow = document.createElement("div"); ow.className = "abs"; inner.append(ow);
+const owT = makeText(ow, "On the way", 54, 90, 68, "#fff");
+const owSub = $(`<div style="position:absolute;left:56px;top:140px;font-weight:600;font-size:36px;color:#bdb8b2;white-space:nowrap">Fresh from Mama's pot</div>`); ow.append(owSub);
+const owBar = $(`<div style="position:absolute;left:54px;top:238px;width:750px;height:10px;border-radius:5px;background:#3b3836;overflow:hidden"><div style="width:0;height:100%;border-radius:5px;background:#e2261f"></div></div>`); ow.append(owBar);
+// Scene: map
+const mp = document.createElement("div"); mp.className = "abs"; inner.append(mp);
+mp.innerHTML = `<svg width="858" height="780" viewBox="0 0 858 780" style="position:absolute;left:0;top:0">
+  <g stroke="#fff" stroke-width="26" fill="none"><path d="M249 -20V800M639 -20V800M-20 189H880M-20 516H880"/><path d="M-30 715L890 222"/></g>
+  <path id="route" d="M89 700C190 590 260 480 360 420S560 330 640 270S700 160 713 128" fill="none" stroke="#e2261f" stroke-width="13" stroke-linecap="round"/></svg>
+  <div id="mapLbl" style="position:absolute;left:36px;top:39px;padding:0 22px;height:75px;border-radius:16px;background:#151311;color:#fff;font-weight:700;font-size:30px;display:flex;align-items:center;white-space:nowrap">Rider on the way</div>
+  <img id="scooter" src="assets/emoji/scooter.png" style="position:absolute;left:0;top:0;width:96px;height:96px">`;
+const route = mp.querySelector("#route"), mapLbl = mp.querySelector("#mapLbl"), scooter = mp.querySelector("#scooter");
+// Scene: bag (decor scales with the box)
+const bg = document.createElement("div"); bg.className = "abs"; bg.style.transformOrigin = "0 0"; inner.append(bg);
+bg.innerHTML = `<div style="position:absolute;left:0;top:0;width:420px;height:621px;background:linear-gradient(90deg,rgba(0,0,0,.13),rgba(255,255,255,.07) 22%,rgba(255,255,255,.04) 70%,rgba(0,0,0,.16))"></div>
+  <div style="position:absolute;left:0;top:0;width:420px;height:58px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(0,0,0,.06));border-bottom:2px solid rgba(0,0,0,.12)"></div>
+  <div style="position:absolute;left:46px;top:58px;width:328px;height:563px;background:linear-gradient(90deg,rgba(0,0,0,.05),rgba(0,0,0,0) 12%,rgba(0,0,0,0) 88%,rgba(0,0,0,.05))"></div>`;
+const bgDecor = [...bg.children];
+const bagLogo = $(`<img src="assets/logo.png" style="position:absolute;left:0;top:0;width:330px">`); inner.append(bagLogo);
+const stars = [0, 1, 2, 3, 4].map(() => { const s = $(`<svg viewBox="0 0 24 24" width="62" height="62" style="position:absolute;left:0;top:0"><path d="M12 2.2l2.95 6.3 6.9.8-5.1 4.7 1.35 6.8L12 17.4l-6.1 3.4 1.35-6.8-5.1-4.7 6.9-.8z" fill="#151311" stroke="#151311" stroke-width="1.2" stroke-linejoin="round"/></svg>`); fx.append(s); return s; });
+const STAR_T = [12.87, 13.083, 13.3, 13.51, 13.713], STAR_X = [366, 453, 540, 627, 714];
+// Scene: photo with bites
+const ph = $(`<img src="../assets/img/turkey.jpg" style="position:absolute;left:0;top:0;object-fit:cover">`); inner.append(ph);
+const BITES = [[900, 344, 116, 14.3], [930, 550, 100, 14.5], [890, 752, 116, 14.7]];
+const bites = BITES.map(() => { const b = $(`<div style="position:absolute;left:0;top:0;border-radius:50%;background:#e7e5e1"></div>`); fx.append(b); return b; });
+const bigBite = [0, 1, 2].map((i) => { const b = $(`<div style="position:absolute;left:0;top:0;border-radius:50%;background:#e7e5e1;opacity:${[1, .45, .2][i]}"></div>`); fx.prepend(b); return b; });
+// Scene: closing line
+const tx = document.createElement("div"); tx.className = "abs"; tx.style.width = "1080px"; tx.style.height = "1080px"; tx.style.transformOrigin = "540px 545px"; fx.append(tx);
+const tx1 = makeText(tx, "The pepper is", 0, 492, 76, "#151311", { red: [4, 10] }), tx2 = makeText(tx, "in every bite", 0, 597, 76, "#151311");
+const txEmo = emo(tx, "assets/emoji/yum.png", 112);
+// Scene: logo + credit
+const logo = $(`<img src="assets/logo.png" style="position:absolute;left:0;top:0;width:780px">`); fx.append(logo);
+const cred = makeText(fx, "made by Blvckman", 0, 543, 74, "#151311", { red: [13, 16], redColor: "#ff6410" });
+
+// Measure text so lines can be centred and the credit revealed letter by letter.
+let measured = false, tx1W, tx2W, credW, credX = [];
+function measure() {
+  tx1W = tx1.el.offsetWidth; tx2W = tx2.el.offsetWidth; credW = cred.el.offsetWidth;
+  tx1.el.style.left = 540 - tx1W / 2 + "px"; tx2.el.style.left = 540 - tx2W / 2 + "px";
+  cred.el.style.left = 540 - credW / 2 + "px";
+  credX = cred.spans.map((s) => s.offsetLeft + s.offsetWidth);
+  measured = true;
+}
+
+/* ---------- render ---------- */
+const show = (el, on) => { el.style.display = on ? "" : "none"; };
 window.render = function (t) {
-  const k = t / B;
-  let i = 0;
-  while (i < S.length - 1 && k >= S[i + 1].start) i++;
-  const prev = i === 0 ? { x: 540, y: 520, w: 0, h: 0, r: 0, bg: RED, sh: 1 } : S[i - 1], cur = S[i];
-  const p = land(k, cur.start, cur.k, i === 0 ? 0.1 : 0.06), pc = clamp(p);
-  const g = { x: mix(prev.x, cur.x, p), y: mix(prev.y, cur.y, p), w: Math.max(0, mix(prev.w, cur.w, p)), h: Math.max(0, mix(prev.h, cur.h, p)), r: Math.max(0, mix(prev.r, cur.r, p)) };
-  const sh = mix(prev.sh, cur.sh, pc);
+  if (!measured) measure();
+  // Container
+  let g = boxAt(t);
+  const carousel = t >= 5.7 && t < 8.45;
+  const sp = carousel ? stripPos(t) : 0;
+  const spv = carousel ? (stripPos(t + 1 / 240) - stripPos(t - 1 / 240)) * 120 * PITCH : 0;
+  if (carousel) g = { ...g, x: g.x - sp * PITCH };
+  const ga = boxAt(t - 1 / 240), gb = boxAt(t + 1 / 240);
+  const vx = carousel ? spv : (gb.x - ga.x) * 120, vy = (gb.y - ga.y) * 120;
+  const boxVis = t < 15.0 ? 1 : 1 - seg(t, 15.0, 15.06);
+  const bf = blur("mb0", Math.abs(vx) * SHUT / 2.2, Math.abs(vy) * SHUT / 2.2);
+  for (const el of [box, over]) {
+    Object.assign(el.style, { left: g.x - g.w / 2 + "px", top: g.y - g.h / 2 + "px", width: g.w + "px", height: g.h + "px",
+      transform: `rotate(${g.rot}deg)`, filter: bf, opacity: boxVis, display: boxVis > 0 ? "" : "none" });
+  }
   Object.assign(box.style, {
-    left: g.x - g.w / 2 + "px", top: g.y - g.h / 2 + "px", width: g.w + "px", height: g.h + "px",
     borderRadius: Math.min(g.r, g.w / 2, g.h / 2) + "px",
-    background: rgb(prev.bg.map((c, j) => mix(c, cur.bg[j], pc))),
-    boxShadow: `0 22px 50px rgba(0,0,0,${0.13 * sh}), 0 3px 8px rgba(0,0,0,${0.06 * sh})`,
-    overflow: cur.ov && k >= cur.k ? "visible" : "hidden",
+    background: `linear-gradient(180deg, rgba(255,255,255,${g.sh}) 0%, rgba(255,255,255,0) 75%), ${rgb(g.c)}`,
+    boxShadow: t < 12.45 || t > 13.9 ? "0 26px 50px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.05)" : "0 22px 40px rgba(0,0,0,.14), 0 3px 8px rgba(0,0,0,.06)",
   });
 
-  S.forEach((s, si) => {
-    const next = S[si + 1];
-    const live = k >= s.k && (!next || k < next.start);
-    s.layer.style.display = live ? "block" : "none";
-    if (!live) return;
-    const out = next ? 1 - clamp((k - (next.start - 0.2)) / 0.2) : 1;
-    const open = s.k + SETTLE;                     // nothing appears until the card has opened
-    for (const e of s.els) {
-      const n = e.node;
-      if (e.t === "text") {
-        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%)`;
-        n.style.opacity = out;
-        e.spans.forEach((sp, li) => {
-          const lk = e.k + li * 0.045;               // each letter lands on its own; the first one on the beat
-          const st = Math.max(lk - 0.55, open);
-          const q = land(k, st, lk, 0.1 + 0.08 * hash(li + e.k), 0.36 + 0.12 * hash(li * 3 + 1));
-          const a = 1 - q;
-          const wave = Math.sin(li * 0.9 + k * 6) * 30 * clamp(a);
-          sp.style.opacity = clamp((k - st) / 0.12);
-          sp.style.transform = `translateY(${a * -60 + wave}px) rotate(${a * (hash(li + 7) * 24 - 12)}deg) scale(${1 + a * 0.6})`;
-        });
-      } else if (e.t === "type") {
-        const st = Math.max(e.k, open);
-        const n2 = Math.floor(clamp((k - st) / (e.end - st)) * e.s.length + 1e-6);
-        n.firstElementChild.textContent = e.s.slice(0, k >= st ? Math.max(1, n2) : 0);
-        n.querySelector("#caret").style.opacity = (k < e.end || Math.floor((k - e.end) * 2) % 2 === 0) && k >= st ? 1 : 0;
-        n.style.opacity = out;
-      } else if (e.t === "carousel") {
-        const st = Math.max(e.k - 0.5, open);
-        const q = land(k, st, e.k, 0.06);
-        // Swipe: dragged fast, then glides to land on the last dish exactly on the beat.
-        const sw = clamp((k - e.swipeFrom) / (e.swipeTo - e.swipeFrom));
-        let pos = (DISHES.length - 1) * outQuint(sw);
-        if (k > e.swipeTo) pos += 0.04 * Math.sin(Math.PI * clamp((k - e.swipeTo) / 0.4)) * (1 - clamp((k - e.swipeTo) / 0.4));
-        n.querySelector(".strip").style.transform = `translateX(${-pos * (e.cardW + 60)}px)`;
-        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%) scale(${1 - (1 - q) * 0.4})`;
-        n.style.opacity = out * clamp((k - st) / 0.15);
-      } else if (e.t === "draw") {
-        const st = Math.max(e.k, open), u = sine(clamp((k - st) / (e.end - st)));
-        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%)`;
-        n.style.opacity = out * clamp((k - st) / 0.05);
-        n.querySelectorAll("path, rect").forEach((pa) => { pa.style.strokeDasharray = "100 120"; pa.style.strokeDashoffset = 100 * (1 - u); });
-      } else {
-        const dur = { type: 0.2, fade: 0.35, bar: 0.3, star: 0.25, bite: 0.12 }[e.from] || 0.5;
-        const st = Math.max(e.k - dur, open);
-        const q = land(k, st, e.k, ["type", "fade", "bar", "bite"].includes(e.from) ? 0 : e.from === "star" ? 0.18 : 0.07);
-        const a = 1 - q;
-        let tr = "", op = clamp((k - st) / Math.min(dur, 0.15));
-        if (e.from === "pop" || e.from === "star") tr = `scale(${1 - a * 0.6})`;
-        if (e.from === "type") tr = `translateX(${a * -28}px)`;
-        if (e.from === "bar") tr = `scaleX(${q})`;
-        if (e.from === "bite") tr = `scale(${q})`;
-        if (e.from === "fade") op = clamp((k - st) / dur);
-        n.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%) ${tr}`;
-        n.style.opacity = out * op;
-        const ip = n.querySelector("#ipaja"); if (ip) ip.style.color = k >= 10 ? "#fff" : "";
-        const pr = n.querySelector("#prog"); if (pr) pr.style.width = 100 * sine(clamp((k - 31.5) / 1.5)) + "%";
-        const rt = n.querySelector("#route");
-        if (rt) {
-          const u = sine(clamp((k - 35.5) / 1.5));
-          rt.style.strokeDasharray = "100 120"; rt.style.strokeDashoffset = 100 * (1 - u);
-          const pt = rt.getPointAtLength(rt.getTotalLength() * u);
-          n.querySelector("#rider").setAttribute("transform", `translate(${pt.x} ${pt.y})`);
-          n.querySelector("#rider").style.opacity = k >= 35.5 ? 1 : 0;
-        }
-        for (const [id, tk] of [["searchbtn", 15], ["placebtn", 28], ["side", 23]]) {
-          const b = n.querySelector("#" + id);
-          if (b) { const c = clamp((k - tk + 0.08) / 0.3); b.style.transform = `scale(${1 - 0.1 * Math.sin(Math.PI * c)})`; }
-        }
-      }
-    }
+  // Me bubble
+  show(me, t >= 0.08 && t < 1.4);
+  if (t >= 0.08 && t < 1.4) {
+    const tm1 = me1.spans.map((_, i) => 0.07 + i * 0.014), tm2 = me2.spans.map((_, i) => 0.2 + i * 0.016);
+    if (t < 1.1) { waveLetters(me1, t, tm1); waveLetters(me2, t, tm2); } else { scatter(me1, t, 1.1); scatter(me2, t, 1.12); }
+    meLbl.style.left = g.w - 50 + "px"; meLbl.style.top = "-36px";
+    meLbl.style.opacity = seg(t, 0.26, 0.34) * (1 - seg(t, 1.06, 1.14));
+    const e = pop(t, 0.6, 0.11, 0.3);
+    place(meEmo, g.w - 90, g.h - 72, e);
+    meEmo.style.opacity = clamp(e * 4) * (1 - 0.7 * seg(t, 1.08, 1.2)) * (1 - seg(t, 1.28, 1.38));
+  }
+  // Friend bubble
+  show(fr, t >= 1.18 && t < 2.42);
+  if (t >= 1.18 && t < 2.42) {
+    let n = 0;
+    frL.forEach((L) => { waveLetters(L, t, L.spans.map(() => 1.19 + (n++) * 0.0095)); });
+    frLbl.style.left = "30px"; frLbl.style.top = "-37px"; frLbl.style.opacity = seg(t, 1.18, 1.26);
+    place(frEmo, g.w - 90, g.h - 69, pop(t, 1.47, 0.1, 0.3));
+    const out = seg(t, 2.22, 2.38);
+    fr.style.opacity = 1 - out; fr.style.filter = out > 0 ? `grayscale(1) brightness(${1 + out * 1.4})` : "";
+  }
+  // Where are you?
+  show(wh, t >= 2.6 && t < 3.68);
+  if (t >= 2.6 && t < 3.68) {
+    waveLetters(whT, t, whT.spans.map((_, i) => 2.64 + i * 0.016), { grey: true });
+    whItems.forEach((it, i) => {
+      const s0 = [2.96, 3.02, 3.07, 3.13][i], u = oc(seg(t, s0, s0 + 0.12));
+      it.style.opacity = u; it.style.transform = `translateX(${(1 - u) * -30}px)`;
+      it.style.color = i === 2 && t >= 3.2 ? "#fff" : u < 1 ? "#9b968f" : "#151311";
+    });
+    const b = oc(seg(t, 3.17, 3.3));
+    whBar.style.transform = `scaleX(${b})`; whBar.style.opacity = b > 0 ? 1 : 0;
+    whBar.style.webkitMaskImage = b < 1 ? "linear-gradient(90deg,#000 85%,transparent)" : "none";
+    wh.style.opacity = 1 - seg(t, 3.55, 3.66);
+  }
+  // Search
+  show(se, t >= 3.86 && t < 4.98);
+  if (t >= 3.86 && t < 4.98) {
+    let n = 0; TAPS.forEach((tp, i) => { if (t >= tp) n = TYPED[i]; });
+    seTxt.firstElementChild.textContent = QUERY.slice(0, n);
+    const grow = t < 4.05 ? 0.59 * pop(t, 3.9, 0.1, 0.2) : mix(0.59, 1, land(t, 4.04, 4.13, 0.08, 0.15));
+    const press = Math.sin(Math.PI * seg(t, 4.726, 4.886));
+    seBtn.style.transform = `translate(${819 - 63}px, ${81 - 63}px) scale(${grow * (1 - 0.1 * press)})`;
+    se.style.opacity = 1 - seg(t, 4.84, 4.95);
+  }
+  // Product card (card 0 in the box) and the rest of the carousel
+  const pcOn = t >= 5.16 && t < 9.47;
+  show(pc, pcOn);
+  if (pcOn) {
+    const s = g.w / 672;
+    pc.style.transform = `scale(${s})`;
+    const ip = oc(seg(t, 5.18, 5.3));
+    pcPh.style.opacity = ip; pcPh.style.transform = `scale(${1.06 - 0.06 * ip})`;
+    pcTx.forEach((e, i) => { const u = oc(seg(t, 5.27 + i * 0.03, 5.4 + i * 0.03)); e.style.opacity = u; e.style.transform = `translateY(${(1 - u) * 14}px)`; });
+    place(pcFire, 586, 86, pop(t, 5.36, 0.12, 0.3));
+    pc.style.opacity = 1 - seg(t, 9.36, 9.46);
+  }
+  const cbf = blur("mb1", Math.abs(spv) * SHUT / 2.2, 0);
+  others.forEach((c, j) => {
+    const i = j + 1, x = 540 + (i - sp) * PITCH;
+    const vis = carousel && x > -400 && x < 1480;
+    show(c, vis);
+    if (!vis) return;
+    c.style.transform = `translate(${x - 336}px, ${550 - 381}px)`;
+    c.style.opacity = seg(t, 5.78, 5.9) * (1 - seg(t, 8.3, 8.44));
+    c.style.filter = cbf;
   });
+  // Side card: flies in, gets tapped, merges into the order card
+  const sideOn = t >= 8.46 && t < 9.5;
+  show(side, sideOn);
+  if (sideOn) {
+    const p = land(t, 8.5, 8.66, 0.07, 0.2), m = io(seg(t, 9.36, 9.5));
+    const x = mix(mix(600, 844, p), 560, m), y = mix(mix(560, 566, p), 552, m);
+    const press = Math.sin(Math.PI * seg(t, 9.001, 9.161));
+    const pa = land(t - 1 / 240, 8.5, 8.66, 0.07, 0.2), pb = land(t + 1 / 240, 8.5, 8.66, 0.07, 0.2);
+    const mvx = (pb - pa) * 120 * 244 + (io(seg(t + 1 / 240, 9.36, 9.5)) - io(seg(t - 1 / 240, 9.36, 9.5))) * 120 * -284;
+    side.style.transform = `translate(${x - 202.5}px, ${y - 235.5}px) rotate(${(1 - clamp(p)) * 6}deg) scale(${(0.4 + 0.6 * p) * (1 - 0.03 * press) * (1 - 0.15 * m)})`;
+    side.style.opacity = clamp(p * 4) * (1 - m);
+    side.style.filter = blur("mb2", Math.abs(mvx) * SHUT / 2.2, 0);
+  }
+  // Your order
+  show(od, t >= 9.94 && t < 10.7);
+  if (t >= 9.94 && t < 10.7) {
+    waveLetters(odT, t, odT.spans.map((_, i) => 9.97 + i * 0.016), { grey: true });
+    odRows.forEach((r, i) => { const u = oc(seg(t, [10.04, 10.1, 10.16][i], [10.04, 10.1, 10.16][i] + 0.12)); r.style.opacity = u; r.style.transform = `translateY(${(1 - u) * 16}px)`; });
+    const bp = pop(t, 9.98, 0.12, 0.12), press = Math.sin(Math.PI * seg(t, 10.48, 10.64));
+    odBtn.style.transform = `scale(${mix(0.4, 1, bp) * (1 - 0.05 * press)}, ${mix(0.12, 1, bp) * (1 - 0.05 * press)})`;
+    odBtn.style.opacity = clamp(bp * 3);
+    od.style.opacity = 1 - seg(t, 10.58, 10.68);
+  }
+  // On the way
+  show(ow, t >= 10.96 && t < 11.7);
+  if (t >= 10.96 && t < 11.7) {
+    waveLetters(owT, t, owT.spans.map((_, i) => 10.98 + i * 0.013));
+    owSub.style.opacity = seg(t, 11.08, 11.18); owBar.style.opacity = seg(t, 11.08, 11.16);
+    owBar.firstElementChild.style.width = 750 * Math.pow(seg(t, 11.1, 11.7), 1.7) + "px";
+    ow.style.opacity = 1 - seg(t, 11.52, 11.66);
+    ow.style.top = (g.h - 297) / 2 + "px";
+  }
+  // Map with the rider
+  show(mp, t >= 11.66 && t < 12.6);
+  if (t >= 11.66 && t < 12.6) {
+    mp.style.top = (g.h - 780) / 2 + "px";
+    mp.style.opacity = seg(t, 11.66, 11.74) * (1 - seg(t, 12.45, 12.56));
+    mapLbl.style.opacity = seg(t, 11.88, 11.98);
+    const u = io(seg(t, 11.95, 12.45)), L = route.getTotalLength(), pt = route.getPointAtLength(L * u);
+    route.style.strokeDasharray = `${L} ${L}`; route.style.strokeDashoffset = L * (1 - u);
+    route.style.opacity = t >= 11.95 ? 1 : 0;
+    const sc = pop(t, 11.82, 0.1, 0.25);
+    scooter.style.transform = `translate(${pt.x - 48}px, ${pt.y - 70}px) scale(${sc})`;
+  }
+  // Bag with the logo, then the stars
+  const bagOn = t >= 12.55 && t < 14.0;
+  show(bg, bagOn); show(bagLogo, bagOn);
+  if (bagOn) {
+    bg.style.transform = `scale(${g.w / 420}, ${g.h / 621})`;
+    bgDecor.forEach((d) => (d.style.opacity = seg(t, 12.62, 12.76)));
+    const lw = g.w * 0.76;
+    bagLogo.style.width = lw + "px";
+    bagLogo.style.transform = `translate(${(g.w - lw) / 2}px, ${g.h * 0.42 - lw * 787 / 2345 / 2}px)`;
+    const o = seg(t, 12.55, 12.64) * (1 - seg(t, 13.9, 13.98));
+    bagLogo.style.opacity = o; bg.style.opacity = 1 - seg(t, 13.9, 13.98);
+  }
+  stars.forEach((s, i) => {
+    const on = t >= STAR_T[i] && t < 14.05;
+    show(s, on);
+    if (!on) return;
+    const fly = oc(seg(t, 13.86 + i * 0.012, 14.02 + i * 0.012));
+    const sc = pop(t, STAR_T[i], 0.1, 0.45);
+    s.style.transform = `translate(${STAR_X[i] - 31 - fly * (110 + i * 45)}px, ${852 - 31 + fly * (330 - i * 25)}px) rotate(${-fly * 50}deg) scale(${sc * (1 - 0.3 * fly)})`;
+    s.style.opacity = 1 - fly;
+    s.style.filter = fly > 0 && fly < 1 ? blur("mb" + (3 + Math.min(i, 4)), 0, 0) : "none";
+  });
+  // Photo card and the bites
+  const phOn = t >= 13.9 && t < 15.06;
+  show(ph, phOn);
+  if (phOn) { ph.style.width = g.w + "px"; ph.style.height = g.h + "px"; ph.style.opacity = seg(t, 13.95, 14.02); }
+  BITES.forEach(([x, y, r, tb], i) => {
+    const on = t >= tb && t < 15.06; show(bites[i], on); if (!on) return;
+    const s = oc(seg(t, tb, tb + 0.06));
+    Object.assign(bites[i].style, { width: 2 * r + "px", height: 2 * r + "px", transform: `translate(${x - r}px, ${y - r}px) scale(${s})` });
+    bites[i].style.zIndex = 2;
+  });
+  bigBite.forEach((b, i) => {
+    const u = seg(t, 14.82, 14.98), on = t >= 14.82 && t < 15.06 && (i === 0 || u < 1); show(b, on); if (!on) return;
+    const r = 760 * io(u) * [1, 1.1, 1.2][i] + 4;
+    Object.assign(b.style, { width: 2 * r + "px", height: 2 * r + "px", transform: `translate(${970 - r}px, ${550 - r}px)`, zIndex: 3 });
+  });
+  // Closing line: "The pepper is / in every bite 😋"
+  show(tx, t >= 15.06 && t < 16.08);
+  if (t >= 15.06 && t < 16.08) {
+    const wordTimes = (T, starts) => { const out = []; let w = 0, k = 0; [...T.spans].forEach((sp) => { if (sp.textContent === " ") { w++; k = 0; out.push(starts[w - 1]); return; } out.push(starts[w] + (k++) * 0.018); }); return out; };
+    waveLetters(tx1, t, wordTimes(tx1, [15.08, 15.12, 15.2]), { amp: 1.1 });
+    waveLetters(tx2, t, wordTimes(tx2, [15.29, 15.37, 15.47]), { amp: 1.1 });
+    place(txEmo, 540 + tx2W / 2 + 105, 595, pop(t, 15.18, 0.12, 0.3));
+    const z = io(seg(t, 15.94, 16.05));
+    tx.style.transform = `scale(${1 - 0.82 * z})`; tx.style.opacity = 1 - seg(t, 15.98, 16.06);
+    tx.style.filter = z > 0 ? blur("mb7", 10 * z, 4 * z) : "none";
+  }
+  // Logo: zooms in, slides left and shrinks, rides the typing, leaves
+  show(logo, t >= 16.02 && t < 18.2);
+  if (t >= 16.02 && t < 18.2) {
+    const zin = land(t, 16.02, 16.17, 0.12, 0.2);
+    let x = 540, w = 780 * mix(0.25, 1, zin);
+    const sl = land(t, 16.85, 17.0, 0.06, 0.18);
+    x = mix(540, 170, sl); w = mix(w, 170, clamp(sl));
+    const ride = io(seg(t, 17.3, 17.9));
+    const tLeft = 540 - credW / 2;
+    const xEnd = tLeft + credW + 14 + 85;
+    x = mix(x, xEnd, ride) + 90 * oc(seg(t, 18.03, 18.18));
+    const lb = blur("mb6", Math.abs(t > 16.84 && t < 17.05 ? 2600 * Math.sin(Math.PI * seg(t, 16.85, 17.0)) : 0) * SHUT / 2.2 + (zin < 0.9 ? 6 * (1 - zin) : 0), zin < 0.9 ? 6 * (1 - zin) : 0);
+    logo.style.width = w + "px";
+    logo.style.transform = `translate(${x - w / 2}px, ${540 - w * 787 / 2345 / 2}px)`;
+    logo.style.filter = lb;
+    logo.style.opacity = clamp((t - 16.02) / 0.05) * (1 - seg(t, 18.04, 18.18));
+    // Credit letters appear as the logo's left edge passes them
+    const edge = x - w / 2 - 6 - tLeft;
+    cred.spans.forEach((sp, i) => { const on = t >= 17.3 && credX[i] < edge; sp.style.opacity = on ? 1 : 0; });
+  }
+  show(cred.el, t >= 17.3);
+  if (t >= 18.2) cred.spans.forEach((sp) => (sp.style.opacity = 1));
 
-  // Hand cursor: small, sideways, one path; presses on taps and while dragging.
-  const c = cursorAt(k);
+  // Cursor
+  const [cx, cy] = cursorAt(t);
   let cs = 1;
-  for (const tk of TAPS) { const d = (k - tk + 0.08) / 0.24; if (d > 0 && d < 1) cs = 1 - 0.22 * Math.sin(Math.PI * d); }
-  if (k > DRAG[0] - 0.08 && k < DRAG[1] + 0.08) cs = 0.82;
-  const vis = clamp((k - 5.6) / 0.3) * (1 - clamp((k - 44.9) / 0.2));
-  Object.assign(hand.style, { opacity: vis, transform: `translate(${c.x - 8}px, ${c.y - 6}px) scale(${cs})`, transformOrigin: "8px 6px" });
+  for (const c of CLICKS) { const d = (t - c + 0.02) / 0.12; if (d > 0 && d < 1) cs = 1 - 0.14 * Math.sin(Math.PI * d); }
+  for (const [a, b] of DRAGS) if (t > a - 0.02 && t < b + 0.02) cs = 0.88;
+  hand.style.transform = `translate(${cx - 14}px, ${cy - 9}px) scale(${cs})`;
+  show(hand, t >= 0.3 && t < 11.05);
 
-  fade.style.opacity = clamp((k - 57.3) / 0.7);
+  fade.style.opacity = seg(t, 19.45, 19.95);
 };
 window.render(0);
 </script>
